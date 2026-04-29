@@ -1,8 +1,12 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Models\JobApplication;
 use App\Models\JobVacancy;
 use Illuminate\Http\Request;
+use App\Http\Requests\ApplyJobRequest;
+use App\Models\Resume;
+use OpenAI\Laravel\Facades\OpenAI;
 
 class JobVacancyController extends Controller
 {
@@ -14,11 +18,99 @@ class JobVacancyController extends Controller
 
     public function apply(string $id){
         $jobVacancy = JobVacancy::findOrFail($id);
-        return view('job-vacancies.apply', compact('jobVacancy'));
+        $resumes = auth()->user()->resumes;
+        return view('job-vacancies.apply', compact('jobVacancy', 'resumes'));
     }
 
-    public function processApllication(Request $request, string $id)  {
+    public function processApllication(ApplyJobRequest $request, string $id)  {
 
+        $resumeId = null;
+        $extractedInfo = null;
+
+        if($request->input('resume_option') === 'new_resume') {
+
+        $file= $request->file('resume_file');
+        $extension = $file->getClientOriginalExtension();
+        $originalName = $file->getClientOriginalName();
+        $fileName = 'resume_' . time() . '.' . $extension;
+
+        // store in laravel cloud 
+        $path = $file->storeAs('resumes', $fileName, 'cloud');
+
+        //$fileUrI = config('filesystems.disks.cloud.url') . '/' . $path;
+
+        //TODO: EXtract informattion for resume
+        $extractedInfo = [
+            'summary' => 'Extracted summary from resume',
+            'skills' => 'Extracted skills from resume',
+            'experience' => 'Extracted experience from resume',
+            'education' => 'Extracted education from resume',
+        ]; 
+       
+
+        $resume = Resume::create([
+            'filename' => $originalName,
+            'fileUri' => $path,
+            'userId' => auth()->id(),
+            'contactDetails' => json_encode([
+                'name' => auth()->user()->name,
+                'email' => auth()->user()->email,
+                
+            ]),
+            'summary' => $extractedInfo['summary'],
+            'skills' => $extractedInfo['skills'],
+            'experience' => $extractedInfo['experience'],
+            'education' => $extractedInfo['education'],
+        ]);
+
+        $resumeId = $resume->id;
+
+
+        } else {
+            $resumeId =  $request->input('resume_option');
+            
+            $resume = Resume::findorFail($resumeId);
+
+            $extractedInfo = [
+                'summary' => $resume->summary,
+                'skills' => $resume->skills,
+                'experience' => $resume->experience,
+                'education' => $resume->education,
+            ];
+
+        };
+         //TODO: evalute Jobapplication with AI and generate score and feedback
+         // Use $extractedInfo and job vacancy details to evaluate the application
+         
+        JobApplication::create([
+            'jobVacancyId' => $id,
+            'resumeId' => $resumeId,
+            'status' => 'pending',
+            'userId' => auth()->id(),
+            'aiGeneratedScore' => 0,
+            'aiGeneratedFeedback' => '',
+        ]);
         
+        return redirect()->route('job-applications.index', $id)->with('success', 'Your application has been submitted successfully.');
     }
+
+//     public function testOpenAI() {  
+
+// $response = OpenAI::chat()->create([
+//     'model' => 'gpt-4o-mini',
+//     'messages' => [
+//         [
+//             'role' => 'system',
+//             'content' => 'You are a helpful assistant for job applications.',
+//         ],
+//         [
+//             'role' => 'user',
+//             'content' => 'Hello! Can you help me with my job application?',
+//         ],
+//     ],
+    
+// ]);
+
+//    echo $response->choices[0]->message->content; // Hello! How can I assist you today?
+// }
 }
