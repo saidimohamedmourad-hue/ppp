@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('companies') }} {{ request()->input('archived') == 'true' ? '(archived)' : '' }}
+            {{ __('schools') }} {{ request()->input('archived') == 'true' ? '(archived)' : '' }}
         </h2>
     </x-slot>
 
@@ -14,22 +14,22 @@
    <!-- Active-->
         <a href="{{ route('company.index') }}" 
         class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500">
-             Active companies
+             Active schools
         </a>
 
     @else
     <!-- Archived-->
     <a href="{{ route('company.index', ['archived' => 'true']) }}"
      class="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black">
-        Archived companies
+        Archived schools
     </a>
 
       @endif
 
-    <!-- Add New company Button -->
+    <!-- Add New school  Button -->
     
         <a href="{{ route('company.create') }}" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            + Add New company
+            + Add New school
         </a>
 </div>
    
@@ -94,7 +94,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="2" class="px-6 py-4 text-center text-gray-500">No company found.</td>
+                <td colspan="2" class="px-6 py-4 text-center text-gray-500">No schools found.</td>
             </tr>
             @endforelse
         </tbody>

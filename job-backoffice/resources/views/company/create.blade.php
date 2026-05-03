@@ -1,7 +1,7 @@
 <x-app-layout>
  <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Add New Company') }}
+            {{ __('Add New school') }}
         </h2>
     </x-slot>
 
@@ -12,13 +12,13 @@
          @csrf
 
 
-        <!--company Details-->
+        <!--school Details-->
         <div class="mb-4 p-6 bg-gray-100 border border-gray-300 rounded-lg shadow-sm">
-            <h3 class="text-lg font-semibold mb-4">Company Details</h3>
-            <span> Enter company details</span>
+            <h3 class="text-lg font-semibold mb-4">school Details</h3>
+            <span> Enter school details</span>
 
                <div class="mb-4">
-            <label for="name" class="block text-gray-700 font-semibold mb-2">Company Name:</label>
+            <label for="name" class="block text-gray-700 font-semibold mb-2">school Name:</label>
             <input type="text" name="name" id="name" value="{{ old('name') }}"
              class="{{ $errors->has('name') ? 'outline-red-500  outline outline-1' : '' }} w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" >
             @error('name')
@@ -59,10 +59,10 @@
         </div>
 
 
-        <!--company owner-->
+        <!--school owner-->
       <div class="mb-4 p-6 bg-gray-100 border border-gray-300 rounded-lg shadow-sm">
-            <h3 class="text-lg font-semibold mb-4">company Owner</h3>
-            <span>Enter company owner</span>
+            <h3 class="text-lg font-semibold mb-4">school Owner</h3>
+            <span>Enter school owner</span>
 
             <div class="mb-4">
                 <label for="owner_name" class="block text-gray-700 font-semibold mb-2">Owner Name:</label>

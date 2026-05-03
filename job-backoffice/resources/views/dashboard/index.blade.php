@@ -23,7 +23,7 @@
                 <!-- Card 2 -->
                 <div class="p-6 bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
-                        <div class="text-lg font-medium text-gray-900">Total Jobs</div>
+                        <div class="text-lg font-medium text-gray-900">Total formations</div>
                         <div class=" text-3xl font-bold text-indigo-600">{{ $analytics['totalJobs'] }}</div>
                            <div class="text-sm  text-gray-500">All time</div>
                     </div>
@@ -41,16 +41,16 @@
                 
                    <!-- Most applied Jobs -->
                 <div class="p-6 bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                     <h3 class="text-lg font-medium text-gray-900">Most applied Jobs</h3>
+                     <h3 class="text-lg font-medium text-gray-900">Most applied Formations</h3>
                      <div>
                         <table class="w-full divide-y divide-gay-200">
                             <thead>
                                 <tr class="text-left">
-                                <th class="py-2 uppercase text-gray-500">Job Title</th>
+                                <th class="py-2 uppercase text-gray-500">Formation Title</th>
                                 @if (auth()->user()->role == 'admin')
                                 
                               
-                                <th class="py-2 uppercase text-gray-500">company</th>
+                                <th class="py-2 uppercase text-gray-500">school</th>
                                   @endif
                                 <th class="py-2 uppercase text-gray-500">Total application</th>
                                 </tr>
@@ -80,7 +80,7 @@
                         <table class="w-full divide-y divide-gay-200">
                             <thead>
                                 <tr class="text-left">
-                                <th class="py-2 uppercase text-gray-500">Job Title</th>
+                                <th class="py-2 uppercase text-gray-500">Formation Title</th>
                                 <th class="py-2 uppercase text-gray-500">Views</th>
                                 <th class="py-2 uppercase text-gray-500">Applications</th>
                                 <th class="py-2 uppercase text-gray-500">Conversion Rates</th>

@@ -9,18 +9,18 @@
 <!-- back button-->
         <div class="mb-4">
             <a href="{{ route('job-vacancy.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500">
-                &larr; Back to jobVacancies
+                &larr; Back to formations
             </a>
         </div>
       <!--wraper-->
 
         <div class="bg-white shadow-md rounded-lg p-6">
               <!-- jobVacancies Details -->
-            <h3 class="text-lg font-semibold mb-4 ">JobVcancy Informations</h3>
+            <h3 class="text-lg font-semibold mb-4 ">Formation Informations</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!--  jobVacancy details -->
             <div>
-                    <p class="text-gray-700"><strong>Company:</strong> {{ $jobVacancy->company->name }}</p>
+                    <p class="text-gray-700"><strong>School:</strong> {{ $jobVacancy->company->name }}</p>
             </div>
                 
                 <div>
@@ -40,14 +40,14 @@
             <div class="flex justify-end space-x-4 m-6">
                 <a href="{{ route('job-vacancy.edit', ['job_vacancy' => $jobVacancy->id, 'redirectTolist' => 'false']) }}"
                  class="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500">
-                    Edit Company
+                    Edit School
                 </a>
 
         <form action="{{ route('job-vacancy.destroy', $jobVacancy->id) }}" method="POST" class="inline-block">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500">
-                        Delete jobVacancy
+                        Delete Formation
                     </button>
                 </form>
 
@@ -73,7 +73,7 @@
                             <thead>
                                 <tr>
                                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Applicant Name</th>
-                                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Job Title</th>
+                                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Formation Title</th>
                                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Status</th>
                                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Action</th>
                                 </tr>
@@ -90,7 +90,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="4" class="py-2 px-4 text-center">No applications </td>
+                                    <td colspan="4" class="py-2 px-4 text-center">No applications found.</td>
                                 </tr>
                                 @endforelse
                             </tbody>

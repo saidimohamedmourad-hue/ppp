@@ -9,14 +9,14 @@
 <!-- back button-->
         <div class="mb-4">
             <a href="{{ route('job-application.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500">
-                &larr; Back to jobApplication
+                &larr; Back to Training Applications
             </a>
         </div>
       <!--wraper-->
 
         <div class="bg-white shadow-md rounded-lg p-6">
               <!-- jobVacancies Details -->
-            <h3 class="text-lg font-semibold mb-4 ">jobApplication Details</h3>
+            <h3 class="text-lg font-semibold mb-4 ">Training Application Details</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!--  jobVacancy details -->
             <div>
@@ -24,16 +24,16 @@
             </div>
                 
                 <div>
-                    <p class="text-gray-700"><strong>Job Vacancy:</strong> {{ $jobApplication->jobVacancy->type }}</p>
+                    <p class="text-gray-700"><strong>Training:</strong> {{ $jobApplication->jobVacancy->type }}</p>
                 </div>
                 <div>
-                    <p class="text-gray-700"><strong>Company:</strong> {{ $jobApplication->jobVacancy->company->name}}</p>
+                    <p class="text-gray-700"><strong>School:</strong> {{ $jobApplication->jobVacancy->company->name}}</p>
                 </div>
                 <div>
                     <p class="text-gray-700"><strong>Status:</strong >  {{ $jobApplication->status }} </p>
                   </div>
                   
-                  <div><strong>Rusume:</strong>
+                  <div><strong>Resume:</strong>
                        <a class="text-blue-500 hover:text-blue-700 underline" 
                     href="{{$jobApplication->resume->fileUri }}" target="_blank">{{ $jobApplication->resume->fileUri }} </a>
                   </div>
@@ -45,7 +45,7 @@
             <div class="flex justify-end space-x-4 m-6">
                 <a href="{{ route('job-application.edit', ['job_application' => $jobApplication->id, 'redirectTolist' => 'false']) }}"
                  class="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500">
-                    Edit jobApplication
+                    Edit Training Application
                 </a>
 
         <form action="{{ route('job-application.destroy', $jobApplication->id) }}" 
@@ -53,7 +53,7 @@
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500">
-                        Delete jobApplication
+                        Delete Training Application
                     </button>
                 </form>
 

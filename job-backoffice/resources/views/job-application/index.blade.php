@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('job-applications') }} {{ request()->input('archived') == 'true' ? '(archived)' : '' }}
+            {{ __('Training Applications') }} {{ request()->input('archived') == 'true' ? '(archived)' : '' }}
         </h2>
     </x-slot>
 
@@ -14,14 +14,14 @@
    <!-- Active-->
         <a href="{{ route('job-application.index') }}" 
         class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500">
-             Active job_vacancies
+             Active Training Vacancies
         </a>
 
     @else
     <!-- Archived-->
     <a href="{{ route('job-application.index', ['archived' => 'true']) }}"
      class="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black">
-        Archived job application
+        Archived Training Applications
     </a>
 
       @endif
@@ -36,9 +36,9 @@
         <thead>
             <tr>
             <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Applicant Name</th>
-              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Position(Job --JobVacancy)</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Training Title</th>
               @if (auth()->user()->role == 'admin')
-                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Company</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">school</th>
                 @endif
                   <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">status</th>
                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">actions</th>
@@ -109,7 +109,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="2" class="px-6 py-4 text-center text-gray-500">No job-applications found.</td>
+                <td colspan="2" class="px-6 py-4 text-center text-gray-500">No training applications found.</td>
             </tr>
             @endforelse
         </tbody>

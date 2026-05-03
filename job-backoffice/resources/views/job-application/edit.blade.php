@@ -1,7 +1,7 @@
 <x-app-layout>
  <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Edit Job Application status') }}
+            {{ __('Edit training Application status') }}
         </h2>
     </x-slot>
 
@@ -16,18 +16,18 @@
         <!--JobApplication Details-->
         
         <div class="mb-4 p-6 bg-gray-100 border border-gray-300 rounded-lg shadow-sm">
-            <h3 class="text-lg font-semibold mb-4">Job Application Details</h3>
-            <span> Enter Job Application status</span>
+            <h3 class="text-lg font-semibold mb-4">Training Application Details</h3>
+            <span> Enter Training Application status</span>
 
            <div>
                     <p class="text-gray-700"><strong>Applicant:</strong> {{ $jobApplication->user->name }}</p>
             </div>
                 
                 <div>
-                    <p class="text-gray-700"><strong>Job Vacancy:</strong> {{ $jobApplication->jobVacancy->type }}</p>
+                    <p class="text-gray-700"><strong>Training:</strong> {{ $jobApplication->jobVacancy->type }}</p>
                 </div>
                 <div>
-                    <p class="text-gray-700"><strong>Company:</strong> {{ $jobApplication->jobVacancy->company->name}}</p>
+                    <p class="text-gray-700"><strong>School:</strong> {{ $jobApplication->jobVacancy->company->name}}</p>
                 </div>
                 <div>
                           <p class="text-gray-700"><strong>AIFeedback:</strong> {{ $jobApplication->aiGeneratedFeedback}}</p>
@@ -62,7 +62,7 @@
          
        
             <button type="submit" 
-            class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">Edit Job application status</button>
+            class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">Edit training application status</button>
         </div>
     </form>
     

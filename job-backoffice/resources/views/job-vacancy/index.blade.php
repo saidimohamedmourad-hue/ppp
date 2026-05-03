@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('job-vacancies') }} {{ request()->input('archived') == 'true' ? '(archived)' : '' }}
+            {{ __('formations') }} {{ request()->input('archived') == 'true' ? '(archived)' : '' }}
         </h2>
     </x-slot>
 
@@ -14,14 +14,14 @@
    <!-- Active-->
         <a href="{{ route('job-vacancy.index') }}" 
         class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500">
-             Active job_vacancies
+             Active formations
         </a>
 
     @else
     <!-- Archived-->
     <a href="{{ route('job-vacancy.index', ['archived' => 'true']) }}"
      class="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black">
-        Archived job_vacancies
+        Archived formations
     </a>
 
       @endif
@@ -29,7 +29,7 @@
     <!-- Add New job-vacancy Button -->
     
         <a href="{{ route('job-vacancy.create') }}" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            + Add New job_vacancies
+            + Add New formations
         </a>
 </div>
    
@@ -41,10 +41,10 @@
             <tr>
             <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Title</th>
             @if (auth()->user()->role == 'admin')
-              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Company</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">School</th>
               @endif
                 <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">location</th>
-                  <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">salary</th>
+                  <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Prix</th>
                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Type</th>
               
               <th class="px-6 py-3 text-left text-sm font-semibold text-gray-800">actions</th>
@@ -104,7 +104,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="2" class="px-6 py-4 text-center text-gray-500">No job-vacancies found.</td>
+                <td colspan="2" class="px-6 py-4 text-center text-gray-500">No formations found.</td>
             </tr>
             @endforelse
         </tbody>

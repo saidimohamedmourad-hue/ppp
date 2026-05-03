@@ -11,7 +11,7 @@
             @if (auth()->user()->role == 'admin') 
         <div class="mb-4">
             <a href="{{ route('company.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500">
-                &larr; Back to Companies
+                &larr; Back to schools
             </a>
         </div>
         @endif
@@ -19,7 +19,7 @@
 
         <div class="bg-white shadow-md rounded-lg p-6">
               <!-- Company Details -->
-            <h3 class="text-lg font-semibold mb-4 ">Company Informations</h3>
+            <h3 class="text-lg font-semibold mb-4 ">school Informations</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- owner name-->
             <div>
@@ -61,7 +61,7 @@
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500">
-                        Delete Company
+                        Delete school
                     </button>
                 </form>
             @endif
@@ -92,7 +92,7 @@
                         <table class="min-w-full bg-gray-50 rounded-lg shadow">
                             <thead>
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Job Title</th>
+                                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">formation Title</th>
                                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Type</th>
                                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Location</th>
                                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Action</th>
@@ -110,7 +110,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="4" class="py-2 px-4 text-center">No jobs </td>
+                                    <td colspan="4" class="py-2 px-4 text-center">No formation available </td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -123,7 +123,7 @@
                             <thead>
                                 <tr>
                                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Applicant Name</th>
-                                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Job Title</th>
+                                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">formation Title</th>
                                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Status</th>
                                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Action</th>
                                 </tr>

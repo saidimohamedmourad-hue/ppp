@@ -15,31 +15,31 @@
         
         @if (auth()->user()->role == 'admin')
         <x-nav-link :href="route('company.index')" :active="request()->routeIs('company.index')">
-            Companies
+            schools
         </x-nav-link>
         @endif
 
         
         @if (auth()->user()->role == 'company-owner')
         <x-nav-link :href="route('my-company.show')" :active="request()->routeIs('my-company.show')">
-           My Companie
+           My school
         </x-nav-link>
         @endif
 
 
         <x-nav-link :href="route('job-application.index')" :active="request()->routeIs('job-application.index')">
-           Job Applications
+            Training Applications
         </x-nav-link>
         @if (auth()->user()->role == 'admin')
         
        
         <x-nav-link :href="route('job-category.index')" :active="request()->routeIs('job-category.index')">
-            Job Categories
+            Training Categories
         </x-nav-link>
          @endif
 
         <x-nav-link :href="route('job-vacancy.index')" :active="request()->routeIs('job-vacancy.index')">
-            Job Vacancies
+            Training vacancies
         </x-nav-link>
         
         @if (auth()->user()->role == 'admin')

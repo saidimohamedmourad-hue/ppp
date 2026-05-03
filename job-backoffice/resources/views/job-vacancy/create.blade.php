@@ -1,7 +1,7 @@
 <x-app-layout>
  <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Add Job Vacancy') }}
+            {{ __('Add Formation') }}
         </h2>
     </x-slot>
 
@@ -14,11 +14,11 @@
 
         <!--JobVacancy Details-->
         <div class="mb-4 p-6 bg-gray-100 border border-gray-300 rounded-lg shadow-sm">
-            <h3 class="text-lg font-semibold mb-4">Job Vacancy Details</h3>
-            <span> Enter Job vacancy details</span>
+            <h3 class="text-lg font-semibold mb-4">Formation Details</h3>
+            <span> Enter Formation details</span>
 
                <div class="mb-4">
-            <label for="title" class="block text-gray-700 font-semibold mb-2">Titile:</label>
+            <label for="title" class="block text-gray-700 font-semibold mb-2">Title:</label>
             <input type="text" name="title" id="title" value="{{ old('title') }}"
              class="{{ $errors->has('title') ? 'outline-red-500  outline outline-1' : '' }} w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" >
             @error('title')
@@ -35,7 +35,7 @@
                 </div>
 
                 <div class="mb-4">
-                <label for="salary" class="block text-gray-700 font-semibold mb-2">Expected salary (USD):</label>
+                <label for="salary" class="block text-gray-700 font-semibold mb-2">Prix (USD):</label>
                 <input type="number" name="salary" id="salary" value="{{ old('salary') }}"
                 class="{{ $errors->has('salry') ? 'outline-red-500  outline outline-1' : '' }} w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" >
                 @error('salary')
@@ -49,8 +49,8 @@
                 class="{{ $errors->has('type') ? 'outline-red-500  outline outline-1' : '' }} w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                 
                     <option value="Full-time">Full-time</option>
-                   <option value="Contract">Contract</option>
-                    <option value="Remote">Remote</option>
+                   <option value="Contract">Accelered</option>
+                    <option value="Remote">En ligne</option>
                     <option value="Hybride">Hybride</option>
                 
                 
@@ -66,7 +66,7 @@
                 <!-- company select dropdown -->
 
                 <div class="mb-4">
-                    <label for="companyId" class="block text-gray-700 font-semibold mb-2">Company:</label>
+                    <label for="companyId" class="block text-gray-700 font-semibold mb-2">School:</label>
                     <select name="companyId" id="companyId"
                         class=" w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                         
@@ -81,10 +81,10 @@
                     @enderror
                 </div>
                 
-                   <!-- Job Category select dropdown -->
+                   <!-- Formation Category select dropdown -->
 
                 <div class="mb-4">
-                    <label for="jobCategoryId" class="block text-gray-700 font-semibold mb-2">Job Category</label>
+                    <label for="jobCategoryId" class="block text-gray-700 font-semibold mb-2">Formation Category</label>
                     <select name="jobCategoryId" id="jobCategoryId"
                         class=" w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                         
@@ -118,7 +118,7 @@
          
        
             <button type="submit" 
-            class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">Add JobVacancy</button>
+            class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">Add Formation</button>
         </div>
     </form>
     
