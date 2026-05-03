@@ -14,7 +14,7 @@
     <div class="flex items-center justify-between">
         <!--search Bar-->
         <form action="{{ route('dashboard') }}" method='get'class="flex items-center justify-center w-1/4">
-            <input type="text" name="search" value="{{ request('search') }}" class="w-full p-2 rounded-l-lg bg-gray-800 text-white" placeholder="search for a job">
+            <input type="text" name="search" value="{{ request('search') }}" class="w-full p-2 rounded-l-lg bg-gray-800 text-white" placeholder="search for Formation..." />
             <button type="submit" class="bg-indigo-500 text-white p-2 rounded-r-lg border border-indigo-500">Search</button>
             @if (request('filter'))
             <input type="hidden" name="filter" value="{{ request('filter') }}">
@@ -32,11 +32,11 @@
             <a href="{{ route('dashboard',['filter' => 'Full-time', 'search' => request('search')]) }}" 
             class="bg-indigo-500 text-withe p-2 rounded-lg">Full-Time</a>
             <a href="{{ route('dashboard',['filter' => 'Remote', 'search' => request('search')]) }}"
-             class="bg-indigo-500 text-withe p-2 rounded-lg">Remote</a>
+             class="bg-indigo-500 text-withe p-2 rounded-lg">online</a>
             <a href="{{ route('dashboard',['filter' => 'Hybrid', 'search' => request('search')]) }}"
              class="bg-indigo-500 text-withe p-2 rounded-lg">Hybride</a>
             <a href="{{ route('dashboard', ['filter' => 'Contract', 'search' => request('search')]) }}"
-             class="bg-indigo-500 text-withe p-2 rounded-lg">Contract</a>
+             class="bg-indigo-500 text-withe p-2 rounded-lg">Accelered</a>
 
              @if (request('filter') )
              
@@ -57,13 +57,13 @@
             <div>
                 <a href="{{ route('job-vacancy.show', $job) }}" class="text-lg font-semibold text-blue-400 hover:underline">{{ $job->title }}</a>
                 <p class="text-sm text-white">{{ $job->company->name }}- {{ $job->location }}<p>
-                <p class="text-sm text-white">{{'$'. number_format($job->salary) }}/Year</p>
+                <p class="text-sm text-white">{{'$'. number_format($job->salary) }}/month</p>
             
            </div>
         <span class="bg-blue-500 text-white p-4 rounded-lg">{{ $job->type }}</span>
        </div>
        @empty
-       <p class="text-white text-2xl font-bold">No jobs found</p>
+       <p class="text-white text-2xl font-bold">No training vacancies found</p>
         @endforelse
        </div>
        <div class="mt-6">

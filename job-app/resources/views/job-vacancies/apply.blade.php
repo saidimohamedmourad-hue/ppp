@@ -7,7 +7,7 @@
     <div class="py-12">
      <div class="bg-black shadow-lg rounded-lg p-6 max-w-7xl mx-auto">
     <a href="{{ route('dashboard') }}" class="text-blue-400 hover:underline mb-6 inline-block" >
-        &larr; Back to Jobs 
+        &larr; Back to Formations
     </a>
     <div class="border-b border-white/10 pb-6">
         <div class="flex items-center justify-between">
@@ -16,7 +16,7 @@
         <P class="text-md text-gray-400">{{ $jobVacancy->company->name }}</P>
         <div class="flex items-center gap-2">
             <p class="text-sm text-white">Location: {{ $jobVacancy->location }}</p>
-            <p class="text-sm text-white">Salary: {{ '$'. number_format($jobVacancy->salary) }}/Year</p>
+            <p class="text-sm text-white">Price: {{ '$'. number_format($jobVacancy->salary) }}/Year</p>
                <p class="bg-indigo-500 text-withe p-2 rounded-lg">Type: {{ $jobVacancy->type }}</p>
         </div>
         </div>
