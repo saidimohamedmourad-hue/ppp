@@ -5,103 +5,43 @@
         </h2>
     </x-slot>
 
-    <div class="py-12 px-6 flex flex-col gap-4">
-        
-        <!--overview cards -->
-        
-            <div class="grid grid-cols-3 gap-4">
-                <!-- Card 1 -->
-                <div class="p-6 bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900">
-                        <div class="text-lg font-medium text-gray-900">Active Users</div>
-                        <div class="mt-2 text-3xl font-bold text-indigo-600">{{ $analytics['activeUsers'] }}</div>
-                           <div class="text-sm  text-gray-500">Last 30 days </div>
-                    </div>
+    <div class="py-12 px-6 flex flex-col gap-6">
+        @if ($showJobTab)
+            <div x-data="{ tab: 'jobs' }" class="flex flex-col gap-6">
+                <div class="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1 shadow-sm self-start" role="tablist">
+                    <button type="button"
+                        @click="tab = 'jobs'"
+                        :class="tab === 'jobs' ? 'bg-white text-indigo-700 shadow-sm' : 'text-gray-600 hover:text-gray-900'"
+                        class="rounded-md px-4 py-2 text-sm font-medium transition">
+                        {{ __('Jobs') }}
+                    </button>
+                    <button type="button"
+                        @click="tab = 'training'"
+                        :class="tab === 'training' ? 'bg-white text-teal-700 shadow-sm' : 'text-gray-600 hover:text-gray-900'"
+                        class="rounded-md px-4 py-2 text-sm font-medium transition">
+                        {{ __('Training') }}
+                    </button>
                 </div>
 
-               
-                <!-- Card 2 -->
-                <div class="p-6 bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900">
-                        <div class="text-lg font-medium text-gray-900">Total Jobs</div>
-                        <div class=" text-3xl font-bold text-indigo-600">{{ $analytics['totalJobs'] }}</div>
-                           <div class="text-sm  text-gray-500">All time</div>
-                    </div>
+                <div x-show="tab === 'jobs'" x-cloak class="flex flex-col gap-4">
+                    @include('dashboard.partials.job-analytics', ['jobAnalytics' => $jobAnalytics])
                 </div>
 
-                <!-- Card 3 -->
-                <div class="p-6 bg-white overflow-hidden shadow-sm rounded-lg">
-                     <div class="p-6 text-gray-900">
-                        <h3 class="text-lg font-medium text-gray-900">Total application</h3>
-                        <p class=" text-3xl font-bold text-indigo-600">{{ $analytics['totalApplications'] }}</p>
-                           <p class="text-sm  text-gray-500">All time </p>
-                    </div>
+                <div x-show="tab === 'training'" x-cloak class="flex flex-col gap-4">
+                    @include('dashboard.partials.training-analytics', ['trainingAnalytics' => $trainingAnalytics])
                 </div>
-</div>
-                
-                   <!-- Most applied Jobs -->
-                <div class="p-6 bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                     <h3 class="text-lg font-medium text-gray-900">Most applied Jobs</h3>
-                     <div>
-                        <table class="w-full divide-y divide-gay-200">
-                            <thead>
-                                <tr class="text-left">
-                                <th class="py-2 uppercase text-gray-500">Job Title</th>
-                                @if (auth()->user()->role == 'admin')
-                                
-                              
-                                <th class="py-2 uppercase text-gray-500">company</th>
-                                  @endif
-                                <th class="py-2 uppercase text-gray-500">Total application</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200">
-                               
-                             @foreach ($analytics['mostAppliedJobs'] as $mostAppliedJob )
-                             <tr>
-                                <td class="py-4">{{ $mostAppliedJob->title }}</td>
-                                   @if (auth()->user()->role == 'admin')
-                                <td class="py-4">{{ $mostAppliedJob->company->name }}</td>
-                                @endif
-                                <td class="py-4">{{ $mostAppliedJob->totalCount }}</td>
-                             </tr>
-                             
-                             @endforeach
-                            </tbody>
-                        </table>
-                     </div>
-                </div>
-                
-            
-               <!--conversion Rates-->
-                    <div class="p-6 bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                     <h3 class="text-lg font-medium text-gray-900">Conversion Rates</h3>
-                     <div>
-                        <table class="w-full divide-y divide-gay-200">
-                            <thead>
-                                <tr class="text-left">
-                                <th class="py-2 uppercase text-gray-500">Job Title</th>
-                                <th class="py-2 uppercase text-gray-500">Views</th>
-                                <th class="py-2 uppercase text-gray-500">Applications</th>
-                                <th class="py-2 uppercase text-gray-500">Conversion Rates</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200">
-                               @foreach ($analytics['conversionRates'] as $conversionRate )
-                               <tr>
-                                <td class="py-4">{{ $conversionRate->title }}</td>
-                                <td class="py-4">{{ $conversionRate->viewCount }}</td>
-                                <td class="py-4">{{ $conversionRate->totalCount }}</td>
-                                <td class="py-4">{{ $conversionRate->conversionRate }}%</td>
-                               </tr>
-                               
-                               @endforeach
-                            </tbody>
-                        </table>
-                     </div>
-                </div>
-                
             </div>
-            
+        @else
+            @if (! $hasSchool)
+                <div class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-900">
+                    {{ __('No school is linked to your account yet. Once an administrator assigns your school, training statistics will appear here.') }}
+                </div>
+            @else
+                <h3 class="text-lg font-semibold text-gray-800">{{ __('Training — your school') }}</h3>
+                <div class="flex flex-col gap-4">
+                    @include('dashboard.partials.training-analytics', ['trainingAnalytics' => $trainingAnalytics])
+                </div>
+            @endif
+        @endif
     </div>
 </x-app-layout>

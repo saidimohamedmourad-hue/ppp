@@ -93,7 +93,7 @@ class CompanyController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id = null)
+    public function show(?string $id = null)
     {   if($id){
         $company = Company::findOrFail($id);
     }else{
@@ -107,7 +107,7 @@ class CompanyController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id = null)
+    public function edit(?string $id = null)
     {
          if($id){
         $company = Company::findOrFail($id);
@@ -122,7 +122,7 @@ class CompanyController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(CompanyUpdateRequest $request, string $id = null)
+    public function update(CompanyUpdateRequest $request, ?string $id = null)
     {
         $validated = $request->validated();
         $company = $this->getCompany($id);
@@ -174,7 +174,7 @@ class CompanyController extends Controller
         return redirect()->route('company.index', ['archived' => 'true'])->with('success', 'Company restored successfully.');
     }
 
-    private function getCompany(string $id = null){
+    private function getCompany(?string $id = null){
         if($id){
             return company::findOrFail($id);
         }
