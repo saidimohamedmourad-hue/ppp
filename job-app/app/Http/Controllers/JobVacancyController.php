@@ -7,9 +7,13 @@ use Illuminate\Http\Request;
 use App\Http\Requests\ApplyJobRequest;
 use App\Models\Resume;
 use OpenAI\Laravel\Facades\OpenAI;
-
+use App\Services\ResumeAnalysisService;
 class JobVacancyController extends Controller
 {
+    protected $resumeAnalysisService;
+    public function __construct( ResumeAnalysisService $resumeAnalysisService){
+        $this->resumeAnalysisService = $resumeAnalysisService;
+    }
     public function show(string $id)
     {
         $jobVacancy = JobVacancy::findOrFail($id);
@@ -37,16 +41,11 @@ class JobVacancyController extends Controller
         // store in laravel cloud 
         $path = $file->storeAs('resumes', $fileName, 'cloud');
 
-        //$fileUrI = config('filesystems.disks.cloud.url') . '/' . $path;
+        $fileUrI = config('filesystems.disks.cloud.url') . '/' . $path;
 
-        //TODO: EXtract informattion for resume
-        $extractedInfo = [
-            'summary' => 'Extracted summary from resume',
-            'skills' => 'Extracted skills from resume',
-            'experience' => 'Extracted experience from resume',
-            'education' => 'Extracted education from resume',
-        ]; 
-       
+        
+        $extractedInfo = $this->resumeAnalysisService->extractResumeInformation($fileUrI);
+
 
         $resume = Resume::create([
             'filename' => $originalName,
