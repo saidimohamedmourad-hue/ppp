@@ -28,6 +28,7 @@ class JobVacancyController extends Controller
 
     public function processApllication(ApplyJobRequest $request, string $id)  {
 
+        $jobVacancy = JobVacancy::findOrFail($id);
         $resumeId = null;
         $extractedInfo = null;
 
@@ -79,15 +80,14 @@ class JobVacancyController extends Controller
 
         };
          //TODO: evalute Jobapplication with AI and generate score and feedback
-         // Use $extractedInfo and job vacancy details to evaluate the application
-         
+         $evaluation = $this->resumeAnalysisService->analyzeResume($extractedInfo,$jobVacancy); 
         JobApplication::create([
             'jobVacancyId' => $id,
             'resumeId' => $resumeId,
             'status' => 'pending',
             'userId' => auth()->id(),
-            'aiGeneratedScore' => 0,
-            'aiGeneratedFeedback' => '',
+            'aiGeneratedScore' => $evaluation['aiGeneratedScore'],
+            'aiGeneratedFeedback' => $evaluation['aiGeneratedFeedback'],
         ]);
         
         return redirect()->route('job-applications.index', $id)->with('success', 'Your application has been submitted successfully.');

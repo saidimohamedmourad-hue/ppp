@@ -58,7 +58,63 @@ class ResumeAnalysisService
         log::error('Error extracting resume information: '.$e->getMessage());
         return ['summary' => '', 'skills' => '', 'experience' => '', 'education' => ''];
     }
-    }      
+    }
+
+    public function analyzeResume( $resumeData,  $jobVacancy):mixed{
+    
+            try{
+                $jobDetails = json_encode([
+                    'job_Title' => $jobVacancy->title,
+                    'job_Description' => $jobVacancy->description,
+                    'job_Salary' => $jobVacancy->salary,
+                    'job_Location' => $jobVacancy->location,
+                    'job_Type' => $jobVacancy->type,
+                ]);
+                $resumeDetails = json_encode([$resumeData]);
+                
+                $response = OpenAI::chat()->create([
+                    'model' => 'gpt-4o',
+                    'messages' => [
+                        ['role' => 'system',
+                         'content' => "You are an expert HR professional and 
+                         recruiter, you are givec job vacancy and a resume.Your task is to analyze 
+                         the resumeand determine if condidate is a good fit for the job.
+                         The output should be in JSON format
+                         Provide a score from 0 to 100 for the candidate's suitability for the job,
+                         and a detailed feedback.
+                         Response should only be JSON that has the followingkeys:'aiGeneratedScore', 'aiGeneratedFeedback'
+                         Aigenerate feedback should be detailed and specific to the job and the condidate's resume."
+                        ],
+                        ['role' => 'user',
+                         'content' => "Please evalute this job application: Job details: {$jobDetails}. Resume details: {$resumeDetails}
+                         "],
+                    ],
+                    'response_format' => [  
+                        'type' => 'json_object',
+                    ],
+                    'temperature' => 0,
+                ]);
+
+                $result = $response->choices[0]->message->content;
+                log::debug('OpenAI evaluationresponse: '.$result);
+             
+                $parsedResult = json_decode($result, true);
+                if(json_last_error() !== JSON_ERROR_NONE){
+                    log::error('Failed to parse OpenAI response: '.json_last_error_msg());
+                    throw new \Exception('Failed to parse OpenAI response: '.json_last_error_msg());
+                }
+                if(!isset($parsedResult['aiGeneratedScore']) || !isset($parsedResult['aiGeneratedFeedback'])){
+                    log::error('Missing required keys in OpenAI response: '.implode(', ', array_keys($parsedResult)));
+                    throw new \Exception('Missing required keys in the parser result: ');
+                }
+               return $parsedResult;
+            } catch (\Exception $e){
+              log::error('Error analyzing resume: '.$e->getMessage());  
+              return ['aiGeneratedScore' => 0, 
+              'aiGeneratedFeedback' => 'an error occurred while analyzing the resume'];
+            }
+    }
+
     public function extractRawText(string $fileUri):string{
         // Reading the file from the cloud to local disk in temp file
         $tempFile = tempnam(sys_get_temp_dir(), 'resume_');
