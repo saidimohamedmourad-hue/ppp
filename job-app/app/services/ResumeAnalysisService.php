@@ -60,6 +60,75 @@ class ResumeAnalysisService
     }
     }
 
+    public function analyzeResumeForTrainingSession($resumeData, $trainingSession): array
+    {
+        try {
+            $trainingDetails = json_encode([
+                'training_Title' => $trainingSession->title,
+                'training_Description' => $trainingSession->description,
+                'training_Category' => optional($trainingSession->trainingCategory)->name,
+                'training_School' => optional($trainingSession->school)->name,
+                'training_Location' => $trainingSession->location,
+                'training_Date' => $trainingSession->trainingDate,
+                'training_EndDate' => $trainingSession->endDate,
+                'training_StartTime' => $trainingSession->startTime,
+                'training_EndTime' => $trainingSession->endTime,
+                'training_MaxParticipants' => $trainingSession->maxParticipants,
+            ]);
+            $resumeDetails = json_encode([$resumeData]);
+
+            $response = OpenAI::chat()->create([
+                'model' => 'gpt-4o',
+                'messages' => [
+                    [
+                        'role' => 'system',
+                        'content' => "You are an expert training admission assistant.
+                         You are given a training session and a candidate resume.
+                         Analyze the candidate resume and determine if the candidate is a good fit for this training.
+                         The output must be in JSON format.
+                         Provide a score from 0 to 100 for the candidate's suitability for this training,
+                         and a detailed feedback explaining why.
+                         Response should only be JSON with the following keys: 'aiGeneratedScore', 'aiGeneratedFeedback'.
+                         aiGeneratedFeedback should be detailed and specific to the training session and the candidate's resume.",
+                    ],
+                    [
+                        'role' => 'user',
+                        'content' => "Please evaluate this training application. Training details: {$trainingDetails}. Resume details: {$resumeDetails}",
+                    ],
+                ],
+                'response_format' => [
+                    'type' => 'json_object',
+                ],
+                'temperature' => 0,
+            ]);
+
+            $result = $response->choices[0]->message->content;
+            log::debug('OpenAI training evaluation response: '.$result);
+
+            $parsedResult = json_decode($result, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                log::error('Failed to parse OpenAI training response: '.json_last_error_msg());
+                throw new \Exception('Failed to parse OpenAI training response: '.json_last_error_msg());
+            }
+            if (!isset($parsedResult['aiGeneratedScore']) || !isset($parsedResult['aiGeneratedFeedback'])) {
+                log::error('Missing required keys in OpenAI training response: '.implode(', ', array_keys($parsedResult)));
+                throw new \Exception('Missing required keys in the training parser result.');
+            }
+
+            return [
+                'aiGeneratedScore' => $parsedResult['aiGeneratedScore'],
+                'aiGeneratedFeedback' => $parsedResult['aiGeneratedFeedback'],
+            ];
+        } catch (\Exception $e) {
+            log::error('Error analyzing resume for training session: '.$e->getMessage());
+
+            return [
+                'aiGeneratedScore' => 0,
+                'aiGeneratedFeedback' => 'An error occurred while analyzing the resume for this training session.',
+            ];
+        }
+    }
+
     public function analyzeResume( $resumeData,  $jobVacancy):mixed{
     
             try{

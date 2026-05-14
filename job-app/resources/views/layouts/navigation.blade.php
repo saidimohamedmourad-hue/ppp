@@ -16,8 +16,16 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
 
-                    <x-nav-link :href="route('job-applications.index')" :active="request()->routeIs('job-applications')" class="text-white">
+                    <x-nav-link :href="route('job-applications.index')" :active="request()->routeIs('job-applications.index')" class="text-white">
                         {{ __('My Applications') }}
+                    </x-nav-link>
+
+                    <x-nav-link :href="route('training-sessions.index')" :active="request()->routeIs('training-sessions.*')" class="text-white">
+                        {{ __('Formations') }}
+                    </x-nav-link>
+
+                    <x-nav-link :href="route('training-applications.index')" :active="request()->routeIs('training-applications.index')" class="text-white">
+                        {{ __('My Training Applications') }}
                     </x-nav-link>
                 </div>
             </div>
@@ -71,6 +79,18 @@
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-white">
                 {{ __('Dashboard') }}
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link :href="route('job-applications.index')" :active="request()->routeIs('job-applications.index')" class="text-white">
+                {{ __('My Applications') }}
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link :href="route('training-sessions.index')" :active="request()->routeIs('training-sessions.*')" class="text-white">
+                {{ __('Formations') }}
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link :href="route('training-applications.index')" :active="request()->routeIs('training-applications.index')" class="text-white">
+                {{ __('My Training Applications') }}
             </x-responsive-nav-link>
         </div>
 
