@@ -11,7 +11,7 @@ class Resume extends Model
 {
     use HasFactory,HasUuids, SoftDeletes;
 
-    protected $tableq = "resumes";
+    protected $table = "resumes";
 
     protected $keytype = "string";
 
@@ -33,16 +33,19 @@ class Resume extends Model
 
     public function casts():array
     {
-        return [   
-                'delete_at' => 'datetime',
+        return [
+            'deleted_at' => 'datetime',
+            'contactDetails' => 'array',
         ];
     }
-  public function user (){
-    return $this->belongsTo(User::class,'userId','id');
 
-  }
-  public function jobApllications (){
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'userId', 'id');
+    }
 
-    return $this->hasMany(JobApplication::class,'resumeId','id');
-  }
+    public function jobApplications()
+    {
+        return $this->hasMany(JobApplication::class, 'resumeId', 'id');
+    }
 }

@@ -1,15 +1,21 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-white leading-tight">
-            {{ __('Dashboard') }}
+            {{ __('Job') }}
         </h2>
     </x-slot>
 
     <div class="py-12">
        <div class="bg-black shadow-lg rounded-lg p-6 max-w-7xl mx-auto">
-        <h3 class="text-white text-2xl font-bold mb-6">
-            {{ 'Welcom Back,' }}{{ Auth::user()->name }}!
-        </h3>
+        <div class="mb-6 flex items-center gap-4">
+            <img src="{{ asset('images/iqra_logo.png') }}" alt="IQRA" class="h-20 w-20 rounded-2xl object-cover">
+            <div>
+                <p class="text-sm font-semibold uppercase tracking-[0.3em] text-cyan-300">IQRA</p>
+                <h3 class="text-white text-2xl font-bold">
+                    {{ 'Welcom Back,' }}{{ Auth::user()->name }}!
+                </h3>
+            </div>
+        </div>
 <!--search $ filter-->
     <div class="flex items-center justify-between">
         <!--search Bar-->

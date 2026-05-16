@@ -8,13 +8,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable,HasUuids,SoftDeletes;
+    use HasFactory, Notifiable, HasUuids, SoftDeletes, HasApiTokens;
 
-    protected $keytype= "string";
+    protected $keyType = "string";
 
     public $incrementing = false;
 
@@ -28,6 +29,9 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'last_login_at',
+        'profile_picture',
+        'cv_url',
     ];
 
     protected $dates = [
@@ -53,7 +57,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'deledeted_at'=> 'datetime',
+            'deleted_at' => 'datetime',
+            'last_login_at' => 'datetime',
         ];
     }
     public function resumes()

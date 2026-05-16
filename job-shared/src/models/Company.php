@@ -29,8 +29,8 @@ public $incrementing = false;
 
     public function casts():array
     {
-        return [   
-                'delete_at' => 'datetime',
+        return [
+            'deleted_at' => 'datetime',
         ];
     }
   public function owner(){

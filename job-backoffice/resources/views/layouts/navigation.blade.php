@@ -3,7 +3,7 @@
     <div class="flex items-center px-6 border-b border-gray-200 py-4">
         <a href="{{ route('dashboard') }}" class="flex items-center space-x-2">
             <x-application-logo class="h-6 w-auto fill-current text-gray-800" />
-            <span class="text-lg font-semibold text-gray-800"> {{ __('Shaghalni') }}</span>
+            <span class="text-lg font-semibold text-gray-800"> {{ __('IQRA') }}</span>
         </a>
     </div>
 
@@ -45,7 +45,7 @@
             </x-nav-link>
         @endif
 
-        @if (in_array(auth()->user()->role, ['admin', 'company-owner', 'school-owner'], true))
+        @if (in_array(auth()->user()->role, ['admin', 'school-owner'], true))
             <x-nav-link :href="route('training-application.index')" :active="request()->routeIs('training-application.index')">
                 Training Applications
             </x-nav-link>
@@ -55,7 +55,7 @@
             </x-nav-link>
         @endif
 
-        @if (in_array(auth()->user()->role, ['admin', 'company-owner'], true))
+        @if (auth()->user()->role === 'admin')
             <x-nav-link :href="route('school.index')" :active="request()->routeIs('school.*')">
                 Schools
             </x-nav-link>

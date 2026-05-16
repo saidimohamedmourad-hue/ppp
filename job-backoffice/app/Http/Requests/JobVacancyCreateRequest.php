@@ -24,7 +24,7 @@ class JobVacancyCreateRequest extends FormRequest
         return [
             'title' => 'required|string|max:255' ,
             'description' => 'required|string|max:1000',
-            'type' => 'required|in:Full-time, Contract,Remote,Hybrid',
+            'type' => 'required|in:Full-time,Contract,Remote,Hybrid',
             'location' => 'required|string|max:255',
             'salary' => 'required|numeric',
             'companyId' =>' required|string|max:255',

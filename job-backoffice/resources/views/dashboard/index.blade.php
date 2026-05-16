@@ -15,21 +15,25 @@
                         class="rounded-md px-4 py-2 text-sm font-medium transition">
                         {{ __('Jobs') }}
                     </button>
+                    @if ($showTrainingTab)
                     <button type="button"
                         @click="tab = 'training'"
                         :class="tab === 'training' ? 'bg-white text-teal-700 shadow-sm' : 'text-gray-600 hover:text-gray-900'"
                         class="rounded-md px-4 py-2 text-sm font-medium transition">
                         {{ __('Training') }}
                     </button>
+                    @endif
                 </div>
 
                 <div x-show="tab === 'jobs'" x-cloak class="flex flex-col gap-4">
                     @include('dashboard.partials.job-analytics', ['jobAnalytics' => $jobAnalytics])
                 </div>
 
+                @if ($showTrainingTab)
                 <div x-show="tab === 'training'" x-cloak class="flex flex-col gap-4">
                     @include('dashboard.partials.training-analytics', ['trainingAnalytics' => $trainingAnalytics])
                 </div>
+                @endif
             </div>
         @else
             @if (! $hasSchool)

@@ -16,9 +16,10 @@
 ],
     "require": {
         "php": "^8.2",
+        "job/shared": "*",
         "laravel/framework": "^12.0",
-        "laravel/tinker": "^2.10.1",
-        "job/shared":"*"
+        "laravel/sanctum": "*",
+        "laravel/tinker": "^2.10.1"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -93,6 +94,16 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
+        },
+        "audit": {
+            "abandoned": "ignore",
+            "ignore": [
+                "PKSA-21fb-n1x5-5nf7",
+                "PKSA-2cx9-ynrq-qdk3",
+                "PKSA-4s4z-t146-6123",
+                "PKSA-z3gr-8qht-p93v",
+                "PKSA-rkkf-636k-qjb3"
+            ]
         }
     },
     "minimum-stability": "dev",

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class JobCategory extends Model
 {
-    use HasFactory , hasUuids, SoftDeletes;
+    use HasFactory, HasUuids, SoftDeletes;
     
     protected $table="job_categories";
     protected $keytype = "string";
@@ -26,8 +26,8 @@ class JobCategory extends Model
 
     public function casts():array
     {
-        return [   
-                'delete_at' => 'datetime',
+        return [
+            'deleted_at' => 'datetime',
         ];
 
     }

@@ -1,96 +1,113 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-white leading-tight">
-            {{ __('My Training Applications') }}
+            {{ __('Mes formations') }}
         </h2>
     </x-slot>
 
-    @if (session('success'))
-        <div class="w-full bg-indigo-500 text-white p-4 rounded-md mb-2">
-            {{ session('success') }}
-        </div>
-    @endif
-    @if (session('error'))
-        <div class="w-full bg-red-500 text-white p-4 rounded-md mb-2">
-            {{ session('error') }}
-        </div>
-    @endif
+    <div class="py-12">
+        <div class="max-w-4xl mx-auto px-4 space-y-4">
 
-    <div>
-        <div class="py-12">
-            <div class="bg-black shadow-lg rounded-lg p-6 max-w-7xl mx-auto space-y-4">
-                @forelse ($trainingApplications as $trainingApplication)
-                    <div class="bg-gray-900 rounded-lg p-4 space-y-3">
-                        <div>
-                            <h3 class="text-white text-lg font-bold">
-                                {{ $trainingApplication->trainingSession->title }}
-                            </h3>
-                            <p class="text-gray-400">
-                                {{ optional($trainingApplication->trainingSession->school)->name }}
-                            </p>
-                            <p class="text-sm text-gray-400">
-                                {{ $trainingApplication->trainingSession->location }}
-                            </p>
-                            @if ($trainingApplication->trainingSession->trainingDate)
-                                <p class="text-xs text-gray-400">
-                                    {{ \Carbon\Carbon::parse($trainingApplication->trainingSession->trainingDate)->format('M d, Y') }}
-                                </p>
-                            @endif
-                        </div>
+            @if(session('success'))
+                <div class="bg-green-600 text-white p-4 rounded-lg mb-2">{{ session('success') }}</div>
+            @endif
+            @if(session('error'))
+                <div class="bg-red-600 text-white p-4 rounded-lg mb-2">{{ session('error') }}</div>
+            @endif
 
-                        <div class="flex justify-between items-center">
-                            <p class="text-sm text-gray-400">
-                                {{ $trainingApplication->created_at->format('d/m/Y H:i') }}
-                            </p>
-                            <p class="px-3 py-1 bg-indigo-500 text-white rounded-lg">
-                                {{ optional($trainingApplication->trainingSession->trainingCategory)->name }}
-                            </p>
-                        </div>
+            @forelse($trainingApplications as $app)
+            @php
+                $statusColor = match($app->status) {
+                    'pending'  => 'bg-yellow-500 text-white',
+                    'reviewed' => 'bg-blue-500 text-white',
+                    'accepted' => 'bg-green-500 text-white',
+                    'rejected' => 'bg-red-500 text-white',
+                    default    => 'bg-gray-500 text-white',
+                };
+                $statusLabel = match($app->status) {
+                    'pending'  => 'En attente',
+                    'reviewed' => 'Examiné',
+                    'accepted' => 'Accepté',
+                    'rejected' => 'Refusé',
+                    default    => $app->status,
+                };
+            @endphp
 
-                        @if ($trainingApplication->resume)
-                            <div class="flex items-center gap-2">
-                                <span class="text-gray-300">
-                                    Applied with {{ $trainingApplication->resume->filename }}
-                                </span>
-                                <a href="{{ Storage::disk('cloud')->url($trainingApplication->resume->fileUri) }}"
-                                    target="_blank" class="text-blue-500 hover:text-blue-700 underline">
-                                    View Resume
-                                </a>
-                            </div>
-                        @endif
+            <div class="bg-gray-900 border border-gray-700 rounded-xl p-5 space-y-3">
 
-                        <div class="flex flex-col gap-2 mt-4">
-                            <div class="flex items-center gap-2">
-                                @php
-                                    $statusColor = match ($trainingApplication->status) {
-                                        'pending' => 'bg-yellow-500',
-                                        'accepted' => 'bg-green-500',
-                                        'rejected' => 'bg-red-500',
-                                        default => 'bg-gray-500',
-                                    };
-                                @endphp
-                                <p class="text-sm {{ $statusColor }} text-white w-fit rounded-md p-2">
-                                    Status: {{ $trainingApplication->status }}
-                                </p>
-                                <p class="text-sm bg-indigo-500 text-white p-2 rounded-md w-fit">
-                                    Score: {{ $trainingApplication->aiGeneratedScore }}
-                                </p>
-                            </div>
-                            <h4 class="text-md font-bold text-white">AI Feedback:</h4>
-                            <p class="text-sm text-gray-300">
-                                {{ $trainingApplication->aiGeneratedFeedback }}
-                            </p>
-                        </div>
+                {{-- Header --}}
+                <div class="flex justify-between items-start gap-3">
+                    <div>
+                        <h3 class="text-white text-lg font-bold leading-tight">
+                            {{ optional($app->trainingSession)->title ?? 'Formation supprimée' }}
+                        </h3>
+                        <p class="text-gray-400 text-sm mt-0.5">
+                            {{ optional($app->trainingSession?->school)->name ?? '—' }}
+                        </p>
                     </div>
-                @empty
-                    <div class="bg-gray-800 rounded-lg p-4 text-center">
-                        <p class="text-gray-400">No training applications found</p>
-                    </div>
-                @endforelse
+                    <span class="shrink-0 px-3 py-1 rounded-full text-xs font-semibold {{ $statusColor }}">
+                        {{ $statusLabel }}
+                    </span>
+                </div>
+
+                {{-- Meta --}}
+                @if($app->trainingSession)
+                <div class="flex flex-wrap gap-3 text-sm text-gray-400">
+                    <span>📍 {{ $app->trainingSession->location }}</span>
+                    @if($app->trainingSession->trainingDate)
+                    <span>📅 {{ \Carbon\Carbon::parse($app->trainingSession->trainingDate)->format('d/m/Y') }}</span>
+                    @endif
+                    @if(optional($app->trainingSession->trainingCategory)->name)
+                    <span class="px-2 py-0.5 bg-indigo-500 text-white rounded-full text-xs">
+                        {{ $app->trainingSession->trainingCategory->name }}
+                    </span>
+                    @endif
+                    <span>🕐 Candidaté le {{ $app->created_at->format('d/m/Y H:i') }}</span>
+                </div>
+                @else
+                <p class="text-sm text-gray-500 italic">🕐 Candidaté le {{ $app->created_at->format('d/m/Y H:i') }}</p>
+                @endif
+
+                {{-- Resume --}}
+                @if($app->resume)
+                <div class="flex items-center gap-2 text-sm">
+                    <span class="text-gray-400">CV :</span>
+                    <span class="text-white font-medium">{{ $app->resume->filename }}</span>
+                    <a href="{{ Storage::url($app->resume->fileUri) }}"
+                       target="_blank"
+                       class="text-blue-400 hover:text-blue-300 underline ml-1">
+                        Voir le CV
+                    </a>
+                </div>
+                @endif
+
+                {{-- AI Feedback --}}
+                <div class="bg-gray-800 rounded-lg p-3 space-y-2">
+                    <p class="text-sm font-semibold text-indigo-400">
+                        🤖 Score IA : {{ $app->aiGeneratedScore ?? 0 }}/100
+                    </p>
+                    <p class="text-sm font-semibold text-indigo-400">
+                        💬 Feedback IA :
+                    </p>
+                    <p class="text-sm text-gray-300">
+                        {{ $app->aiGeneratedFeedback ?: 'Pas encore de feedback IA pour cette candidature.' }}
+                    </p>
+                </div>
+
             </div>
-            <div class="max-w-7xl mx-auto mt-4">
-                {{ $trainingApplications->links() }}
+            @empty
+            <div class="bg-gray-900 border border-gray-700 rounded-xl p-10 text-center">
+                <p class="text-gray-400 text-lg">Aucune candidature à une formation pour le moment.</p>
+                <a href="{{ route('training-sessions.index') }}" class="mt-4 inline-block text-indigo-400 hover:underline">
+                    Voir les formations disponibles →
+                </a>
             </div>
+            @endforelse
+
+            @if($trainingApplications->hasPages())
+            <div class="mt-4">{{ $trainingApplications->links() }}</div>
+            @endif
+
         </div>
     </div>
 </x-app-layout>

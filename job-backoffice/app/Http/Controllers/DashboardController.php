@@ -25,7 +25,8 @@ class DashboardController extends Controller
                 : $this->emptyTrainingAnalytics();
             $hasSchool = (bool) $school;
 
-            return view('dashboard.index', compact('jobAnalytics', 'trainingAnalytics', 'showJobTab', 'hasSchool'));
+            $showTrainingTab = true;
+            return view('dashboard.index', compact('jobAnalytics', 'trainingAnalytics', 'showJobTab', 'showTrainingTab', 'hasSchool'));
         }
 
         $jobAnalytics = $role === 'admin'
@@ -34,12 +35,13 @@ class DashboardController extends Controller
 
         $trainingAnalytics = $role === 'admin'
             ? $this->adminTrainingDashboard()
-            : $this->companyOwnerTrainingDashboard();
+            : null;
 
         $showJobTab = true;
+        $showTrainingTab = $role === 'admin';
         $hasSchool = true;
 
-        return view('dashboard.index', compact('jobAnalytics', 'trainingAnalytics', 'showJobTab', 'hasSchool'));
+        return view('dashboard.index', compact('jobAnalytics', 'trainingAnalytics', 'showJobTab', 'showTrainingTab', 'hasSchool'));
     }
 
     private function emptyTrainingAnalytics(): array

@@ -33,17 +33,23 @@ class JobApplication extends Model
 
     public function casts():array
     {
-        return [   
-                'delete_at' => 'datetime',
+        return [
+            'deleted_at' => 'datetime',
         ];
     }
-    public function jobVacancy(){
-        return $this->belongsTo(JobVacancy::class,'jobVacancyId','id');
+
+    public function jobVacancy()
+    {
+        return $this->belongsTo(JobVacancy::class, 'jobVacancyId', 'id');
     }
-     public function user(){
-        return $this->belongsTo(user::class,'userId','id');
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'userId', 'id');
     }
-     public function resume(){
-        return $this->belongsTo(Resume::class,'resumeId','id');
+
+    public function resume()
+    {
+        return $this->belongsTo(Resume::class, 'resumeId', 'id');
     }
 }

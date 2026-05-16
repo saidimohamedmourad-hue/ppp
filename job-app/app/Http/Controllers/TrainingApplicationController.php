@@ -9,8 +9,7 @@ class TrainingApplicationController extends Controller
     public function index()
     {
         $trainingApplications = TrainingApplication::with([
-            'trainingSession.school',
-            'trainingSession.trainingCategory',
+            'trainingSession' => fn ($q) => $q->withTrashed()->with(['school', 'trainingCategory']),
             'resume',
         ])
             ->where('userId', auth()->id())
