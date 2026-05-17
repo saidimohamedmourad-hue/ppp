@@ -49,45 +49,45 @@ class CompanyController extends Controller
      * Show the form for creating a new resource.
      */
     public function create()
-    { 
-        $industries = $this-> industries;
-       
-        return view('company.create', compact('industries'));
+    {
+        $industries = $this->industries;
+        $unlinkedOwners = User::where('role', 'company-owner')
+            ->whereDoesntHave('company')
+            ->orderBy('name')
+            ->get();
+
+        return view('company.create', compact('industries', 'unlinkedOwners'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-     public function store(CompanyCreateRequest $request)
-
+    public function store(CompanyCreateRequest $request)
     {
-        
         $validated = $request->validated();
-        //create owner
 
-        $owner = User::create([
-            'name' => $validated['owner_name'],
-            'email' => $validated['owner_email'],
-            'password' => Hash::make($validated['owner_password']),
-            'role' => 'company-owner',
-        ]);
-
-        // return error if owner not created
-        if (!$owner) {
-            return redirect()->route('company.create')->with('error', 'Failed to create company owner.');
+        if ($validated['owner_mode'] === 'existing') {
+            $owner = User::where('role', 'company-owner')
+                ->whereDoesntHave('company')
+                ->findOrFail($validated['owner_id']);
+        } else {
+            $owner = User::create([
+                'name'     => $validated['owner_name'],
+                'email'    => $validated['owner_email'],
+                'password' => Hash::make($validated['owner_password']),
+                'role'     => 'company-owner',
+            ]);
         }
 
-        //create company
-
-
         Company::create([
-            'name' => $validated['name'],
-            'address' => $validated['address'],
+            'name'     => $validated['name'],
+            'address'  => $validated['address'],
             'industry' => $validated['industry'],
-            'website' => $validated['website'] ?? null,
-            'ownerId' => $owner->id,
+            'website'  => $validated['website'] ?? null,
+            'ownerId'  => $owner->id,
         ]);
-        return redirect()->route('company.index')->with('success', 'Company created successfully.');
+
+        return redirect()->route('company.index')->with('success', 'Entreprise créée avec succès.');
     }
 
     /**

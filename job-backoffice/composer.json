@@ -19,7 +19,9 @@
         "job/shared": "*",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "*",
-        "laravel/tinker": "^2.10.1"
+        "laravel/tinker": "^2.10.1",
+        "openai-php/laravel": "^0.19.1",
+        "smalot/pdfparser": "^2.12"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

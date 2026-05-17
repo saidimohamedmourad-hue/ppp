@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\AnalyzeTrainingApplicationJob;
 use App\Models\Resume;
 use App\Models\TrainingApplication;
 use App\Models\TrainingSession;
@@ -34,7 +35,7 @@ class TrainingApiController extends Controller
         }
 
         if ($request->filled('format')) {
-            $query->where('format', $request->format);
+            $query->where('format', $request->input('format'));
         }
 
         $sessions = $query->latest()->paginate(10);
@@ -98,15 +99,18 @@ class TrainingApiController extends Controller
         }
 
         $application = TrainingApplication::create([
-            'trainingSessionId'  => $id,
-            'userId'             => $user->id,
-            'resumeId'           => $resumeId,
-            'status'             => 'pending',
-            'aiGeneratedScore'   => 0,
+            'trainingSessionId'   => $id,
+            'userId'              => $user->id,
+            'resumeId'            => $resumeId,
+            'status'              => 'pending',
+            'aiGeneratedScore'    => 0,
             'aiGeneratedFeedback' => '',
         ]);
 
         $session->increment('currentParticipants');
+
+        // Analyse IA en arrière-plan (queue)
+        AnalyzeTrainingApplicationJob::dispatch($application->id);
 
         return response()->json($application->load(['trainingSession.school', 'resume']), 201);
     }

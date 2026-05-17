@@ -74,6 +74,8 @@ class AuthApiController extends Controller
 
     private function formatUser(User $user): array
     {
+        $user->loadMissing(['company', 'school']);
+
         return [
             'id'              => $user->id,
             'name'            => $user->name,
@@ -83,6 +85,8 @@ class AuthApiController extends Controller
             'cv_url'          => $user->cv_url,
             'last_login_at'   => $user->last_login_at,
             'created_at'      => $user->created_at,
+            'has_company'     => $user->company !== null,
+            'has_school'      => $user->school !== null,
         ];
     }
 }

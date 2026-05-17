@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\AnalyzeJobApplicationJob;
 use App\Models\JobApplication;
 use App\Models\JobVacancy;
 use App\Models\Resume;
@@ -97,13 +98,16 @@ class JobApiController extends Controller
         }
 
         $application = JobApplication::create([
-            'jobVacancyId'       => $id,
-            'userId'             => $user->id,
-            'resumeId'           => $resumeId,
-            'status'             => 'pending',
-            'aiGeneratedScore'   => 0,
+            'jobVacancyId'        => $id,
+            'userId'              => $user->id,
+            'resumeId'            => $resumeId,
+            'status'              => 'pending',
+            'aiGeneratedScore'    => 0,
             'aiGeneratedFeedback' => '',
         ]);
+
+        // Analyse IA en arrière-plan (queue)
+        AnalyzeJobApplicationJob::dispatch($application->id);
 
         return response()->json($application->load(['jobVacancy.company', 'resume']), 201);
     }

@@ -42,32 +42,41 @@ class SchoolController extends Controller
     public function create()
     {
         $industries = $this->industries;
-        return view('school.create', compact('industries'));
+        $unlinkedOwners = User::where('role', 'school-owner')
+            ->whereDoesntHave('school')
+            ->orderBy('name')
+            ->get();
+
+        return view('school.create', compact('industries', 'unlinkedOwners'));
     }
 
     public function store(SchoolCreateRequest $request)
     {
         $validated = $request->validated();
-        $owner = User::create([
-            'name' => $validated['owner_name'],
-            'email' => $validated['owner_email'],
-            'password' => Hash::make($validated['owner_password']),
-            'role' => 'school-owner',
-        ]);
 
-        if (!$owner) {
-            return redirect()->route('school.create')->with('error', 'Failed to create school owner.');
+        if ($validated['owner_mode'] === 'existing') {
+            $owner = User::where('role', 'school-owner')
+                ->whereDoesntHave('school')
+                ->findOrFail($validated['owner_id']);
+        } else {
+            $owner = User::create([
+                'name'     => $validated['owner_name'],
+                'email'    => $validated['owner_email'],
+                'password' => Hash::make($validated['owner_password']),
+                'role'     => 'school-owner',
+            ]);
         }
 
         School::create([
-            'name' => $validated['name'],
-            'address' => $validated['address'],
-            'industry' => $validated['industry'],
+            'name'        => $validated['name'],
+            'address'     => $validated['address'],
+            'industry'    => $validated['industry'],
             'description' => $validated['description'] ?? null,
-            'website' => $validated['website'] ?? null,
-            'ownerId' => $owner->id,
+            'website'     => $validated['website'] ?? null,
+            'ownerId'     => $owner->id,
         ]);
-        return redirect()->route('school.index')->with('success', 'School created successfully.');
+
+        return redirect()->route('school.index')->with('success', 'École créée avec succès.');
     }
 
     public function show(?string $id = null)
