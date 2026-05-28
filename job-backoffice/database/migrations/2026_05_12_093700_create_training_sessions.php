@@ -19,7 +19,7 @@ return new class extends Migration
             $table->time('endTime')->nullable();
             $table->unsignedInteger('maxParticipants')->default(0);
             $table->unsignedInteger('currentParticipants')->default(0);
-            $table->enum('status', ['draft', 'open', 'closed', 'cancelled'])->default('draft');
+            $table->enum('status', ['open', 'closed', 'cancelled'])->default('open');
             $table->string('salary')->nullable();
             $table->unsignedInteger('viewCount')->default(0);
             $table->timestamps();

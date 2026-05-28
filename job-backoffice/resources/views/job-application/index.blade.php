@@ -59,9 +59,14 @@
                     @endif
                 </td>
                 
-                <td class="px-6 py-4 text-gray-800">{{ $jobApplication->jobVacancy->title }}</td>
+                <td class="px-6 py-4 text-gray-800">
+                    {{ $jobApplication->jobVacancy?->title ?? __('Offre supprimée') }}
+                    @if ($jobApplication->jobVacancy?->trashed())
+                        <span class="text-xs text-gray-500">({{ __('archivée') }})</span>
+                    @endif
+                </td>
                  @if (auth()->user()->role == 'admin')
-                 <td class="px-6 py-4 text-gray-800">{{ $jobApplication->jobVacancy->company->name ?? 'N/A'}}</td>
+                 <td class="px-6 py-4 text-gray-800">{{ $jobApplication->jobVacancy?->company?->name ?? 'N/A' }}</td>
                  @endif
               
                        <!-- <td class="px-6 py-4 text-gray-800">{{ $jobApplication->status }}</td> -->

@@ -94,11 +94,33 @@
                     <label for="status" class="block text-gray-700 font-semibold mb-2">Status</label>
                     <select name="status" id="status"
                         class="{{ $errors->has('status') ? 'outline-red-500 outline outline-1' : '' }} w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        @foreach (['draft', 'open', 'closed', 'cancelled'] as $statusOption)
-                            <option value="{{ $statusOption }}" @selected(old('status', 'draft') === $statusOption)>{{ $statusOption }}</option>
+                        @foreach (['open', 'closed', 'cancelled'] as $statusOption)
+                            <option value="{{ $statusOption }}" @selected(old('status', 'open') === $statusOption)>{{ $statusOption }}</option>
                         @endforeach
                     </select>
                     @error('status')
+                        <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="mb-4">
+                    <label for="type" class="block text-gray-700 font-semibold mb-2">Type</label>
+                    <select name="type" id="type"
+                        class="{{ $errors->has('type') ? 'outline-red-500 outline outline-1' : '' }} w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        @foreach (['presentiel' => 'Présentiel', 'en_ligne' => 'En ligne', 'accelerer' => 'Accéléré'] as $value => $label)
+                            <option value="{{ $value }}" @selected(old('type', 'presentiel') === $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    @error('type')
+                        <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="mb-4">
+                    <label for="cancellation_reason" class="block text-gray-700 font-semibold mb-2">Raison d'annulation <span class="text-gray-500 font-normal">(requis si statut = annulé)</span></label>
+                    <textarea name="cancellation_reason" id="cancellation_reason" rows="3"
+                        class="{{ $errors->has('cancellation_reason') ? 'outline-red-500 outline outline-1' : '' }} w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">{{ old('cancellation_reason') }}</textarea>
+                    @error('cancellation_reason')
                         <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
                     @enderror
                 </div>

@@ -25,14 +25,22 @@ class TrainingSession extends Model
         "maxParticipants",
         "currentParticipants",
         "status",
+        "type",
+        "cancellation_reason",
         "description",
         "location",
         "salary",
         'viewCount',
         "trainingCategoryId",
         "schoolId",
-        
     ];
+
+    protected $appends = ['is_full'];
+
+    public function getIsFullAttribute(): bool
+    {
+        return $this->maxParticipants > 0 && $this->currentParticipants >= $this->maxParticipants;
+    }
        protected $dates = [
         "deleted_at"
     ];

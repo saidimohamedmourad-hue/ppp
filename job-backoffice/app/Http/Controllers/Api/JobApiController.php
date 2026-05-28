@@ -22,8 +22,8 @@ class JobApiController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('location', 'like', "%{$search}%")
-                  ->orWhereHas('company', fn ($q) => $q->where('name', 'like', "%{$search}%"));
+                    ->orWhere('location', 'like', "%{$search}%")
+                    ->orWhereHas('company', fn ($q) => $q->where('name', 'like', "%{$search}%"));
             });
         }
 
@@ -70,7 +70,7 @@ class JobApiController extends Controller
         $data = $request->validate([
             'resume_id'    => 'required_without:resume_file|nullable|uuid|exists:resumes,id',
             'resume_file'  => 'required_without:resume_id|nullable|file|mimes:pdf|max:2048',
-            'cover_letter' => 'nullable|string|max:2000',
+            'cover_letter' => 'nullable|string|max:5000',
         ]);
 
         $resumeId = $data['resume_id'] ?? null;
@@ -80,14 +80,14 @@ class JobApiController extends Controller
             $path = $file->store('resumes', 'public');
 
             $resume = Resume::create([
-                'filename'       => $file->getClientOriginalName(),
-                'fileUri'        => $path,
-                'userId'         => $user->id,
+                'filename' => $file->getClientOriginalName(),
+                'fileUri' => $path,
+                'userId' => $user->id,
                 'contactDetails' => ['name' => $user->name, 'email' => $user->email],
-                'summary'        => '',
-                'skills'         => '',
-                'experience'     => '',
-                'education'      => '',
+                'summary' => '',
+                'skills' => '',
+                'experience' => '',
+                'education' => '',
             ]);
             $resumeId = $resume->id;
         }
@@ -98,11 +98,12 @@ class JobApiController extends Controller
         }
 
         $application = JobApplication::create([
-            'jobVacancyId'        => $id,
-            'userId'              => $user->id,
-            'resumeId'            => $resumeId,
-            'status'              => 'pending',
-            'aiGeneratedScore'    => 0,
+            'jobVacancyId'       => $id,
+            'userId'             => $user->id,
+            'resumeId'           => $resumeId,
+            'cover_letter'       => $data['cover_letter'] ?? null,
+            'status'             => 'pending',
+            'aiGeneratedScore'   => 0,
             'aiGeneratedFeedback' => '',
         ]);
 
@@ -121,6 +122,17 @@ class JobApiController extends Controller
             ->paginate(10);
 
         return response()->json($applications);
+    }
+
+    public function withdrawApplication(Request $request, string $id): JsonResponse
+    {
+        $application = JobApplication::where('userId', $request->user()->id)
+            ->whereNull('deleted_at')
+            ->findOrFail($id);
+
+        $application->delete();
+
+        return response()->json(['message' => 'Candidature retirée.']);
     }
 
     // ─── Company-Owner ────────────────────────────────────────────────────────
@@ -149,11 +161,11 @@ class JobApiController extends Controller
         }
 
         $data = $request->validate([
-            'title'         => 'required|string|max:255',
-            'description'   => 'required|string|max:5000',
-            'location'      => 'required|string|max:255',
-            'type'          => 'required|in:Full-time,Contract,Remote,Hybrid',
-            'salary'        => 'required|numeric|min:0',
+            'title' => 'required|string|max:255',
+            'description' => 'required|string|max:5000',
+            'location' => 'required|string|max:255',
+            'type' => 'required|in:Full-time,Contract,Remote,Hybrid',
+            'salary' => 'required|numeric|min:0',
             'jobCategoryId' => 'required|uuid|exists:job_categories,id',
         ]);
 
@@ -168,11 +180,11 @@ class JobApiController extends Controller
         $job = JobVacancy::where('companyId', $company?->id)->whereNull('deleted_at')->findOrFail($id);
 
         $data = $request->validate([
-            'title'         => 'sometimes|string|max:255',
-            'description'   => 'sometimes|string|max:5000',
-            'location'      => 'sometimes|string|max:255',
-            'type'          => 'sometimes|in:Full-time,Contract,Remote,Hybrid',
-            'salary'        => 'sometimes|numeric|min:0',
+            'title' => 'sometimes|string|max:255',
+            'description' => 'sometimes|string|max:5000',
+            'location' => 'sometimes|string|max:255',
+            'type' => 'sometimes|in:Full-time,Contract,Remote,Hybrid',
+            'salary' => 'sometimes|numeric|min:0',
             'jobCategoryId' => 'sometimes|uuid|exists:job_categories,id',
         ]);
 

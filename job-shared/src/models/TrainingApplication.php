@@ -19,11 +19,17 @@ class TrainingApplication extends Model
 
     protected $fillable = [
         "status",
+        "is_waitlist",
         "aiGeneratedScore",
         "aiGeneratedFeedback",
         "trainingSessionId",
         "userId",
         "resumeId",
+        "cover_letter",
+    ];
+
+    protected $casts = [
+        "is_waitlist" => "boolean",
     ];
 
       protected $dates = [

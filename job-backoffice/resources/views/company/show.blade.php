@@ -132,7 +132,7 @@
                                 @foreach ($company->jobapplications as $application)
                                 <tr>
                                     <td class="px-6 py-4 text-sm text-gray-900">{{ $application->user->name }}</td>
-                                    <td class="px-6 py-4 text-sm text-gray-900">{{ $application->jobVacancy->title }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-900">{{ $application->jobVacancy?->title ?? __('Offre supprimée') }}</td>
                                     <td class="px-6 py-4 text-sm text-gray-900">{{ $application->status }}</td>
                                     <td class="px-6 py-4 text-sm text-gray-900">
                                         <a href="{{ route('job-application.show', $application->id) }}" class="text-blue-500 hover:text-blue-700">View</a>

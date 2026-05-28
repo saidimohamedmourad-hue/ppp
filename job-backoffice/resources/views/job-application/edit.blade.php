@@ -24,10 +24,10 @@
             </div>
                 
                 <div>
-                    <p class="text-gray-700"><strong>Job Vacancy:</strong> {{ $jobApplication->jobVacancy->type }}</p>
+                    <p class="text-gray-700"><strong>Job Vacancy:</strong> {{ $jobApplication->jobVacancy?->type ?? 'N/A' }}</p>
                 </div>
                 <div>
-                    <p class="text-gray-700"><strong>Company:</strong> {{ $jobApplication->jobVacancy->company->name}}</p>
+                    <p class="text-gray-700"><strong>Company:</strong> {{ $jobApplication->jobVacancy?->company?->name ?? 'N/A' }}</p>
                 </div>
                 <div>
                           <p class="text-gray-700"><strong>AIFeedback:</strong> {{ $jobApplication->aiGeneratedFeedback}}</p>

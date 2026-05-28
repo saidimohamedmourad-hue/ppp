@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ $jobApplication->user->name }} Applied to {{ $jobApplication->jobVacancy->title }}
+            {{ $jobApplication->user->name }} Applied to {{ $jobApplication->jobVacancy?->title ?? __('Offre supprimée') }}
         </h2>
     </x-slot>
     <div class="overflow-x-auto p-6">
@@ -24,10 +24,10 @@
             </div>
                 
                 <div>
-                    <p class="text-gray-700"><strong>Job Vacancy:</strong> {{ $jobApplication->jobVacancy->type }}</p>
+                    <p class="text-gray-700"><strong>Job Vacancy:</strong> {{ $jobApplication->jobVacancy?->type ?? 'N/A' }}</p>
                 </div>
                 <div>
-                    <p class="text-gray-700"><strong>Company:</strong> {{ $jobApplication->jobVacancy->company->name}}</p>
+                    <p class="text-gray-700"><strong>Company:</strong> {{ $jobApplication->jobVacancy?->company?->name ?? 'N/A' }}</p>
                 </div>
                 <div>
                     <p class="text-gray-700"><strong>Status:</strong >  {{ $jobApplication->status }} </p>

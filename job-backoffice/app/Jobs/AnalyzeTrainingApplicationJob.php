@@ -28,8 +28,16 @@ class AnalyzeTrainingApplicationJob implements ShouldQueue
             'trainingSession.school',
         ])->find($this->applicationId);
 
-        if (! $application || ! $application->resume || ! $application->trainingSession) {
+        if (! $application || ! $application->trainingSession) {
             Log::warning("AnalyzeTrainingApplicationJob: données manquantes pour {$this->applicationId}");
+            return;
+        }
+
+        if (! $application->resume) {
+            $application->update([
+                'aiGeneratedScore'    => 0,
+                'aiGeneratedFeedback' => '__no_cv__',
+            ]);
             return;
         }
 

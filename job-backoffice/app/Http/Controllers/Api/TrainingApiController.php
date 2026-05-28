@@ -16,17 +16,18 @@ class TrainingApiController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        // Show open + cancelled sessions; hide closed
         $query = TrainingSession::with(['school', 'trainingCategory'])
             ->whereNull('deleted_at')
-            ->where('status', 'open');
+            ->whereIn('status', ['open', 'cancelled']);
 
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('location', 'like', "%{$search}%")
-                  ->orWhereHas('school', fn ($q) => $q->where('name', 'like', "%{$search}%"))
-                  ->orWhereHas('trainingCategory', fn ($q) => $q->where('name', 'like', "%{$search}%"));
+                    ->orWhere('location', 'like', "%{$search}%")
+                    ->orWhereHas('school', fn ($q) => $q->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('trainingCategory', fn ($q) => $q->where('name', 'like', "%{$search}%"));
             });
         }
 
@@ -34,8 +35,8 @@ class TrainingApiController extends Controller
             $query->where('trainingCategoryId', $request->category);
         }
 
-        if ($request->filled('format')) {
-            $query->where('format', $request->input('format'));
+        if ($request->filled('type')) {
+            $query->where('type', $request->input('type'));
         }
 
         $sessions = $query->latest()->paginate(10);
@@ -45,9 +46,10 @@ class TrainingApiController extends Controller
 
     public function show(string $id): JsonResponse
     {
+        // Allow viewing open + cancelled (cancelled shows the reason banner)
         $session = TrainingSession::with(['school', 'trainingCategory'])
             ->whereNull('deleted_at')
-            ->where('status', 'open')
+            ->whereIn('status', ['open', 'cancelled'])
             ->findOrFail($id);
 
         $session->increment('viewCount');
@@ -59,6 +61,7 @@ class TrainingApiController extends Controller
 
     public function apply(Request $request, string $id): JsonResponse
     {
+        // Only open sessions accept applications (cancelled/closed do not)
         $session = TrainingSession::whereNull('deleted_at')->where('status', 'open')->findOrFail($id);
         $user = $request->user();
 
@@ -66,13 +69,14 @@ class TrainingApiController extends Controller
             return response()->json(['message' => 'Vous êtes déjà inscrit à cette formation.'], 409);
         }
 
-        if ($session->maxParticipants && $session->currentParticipants >= $session->maxParticipants) {
-            return response()->json(['message' => 'La formation est complète.'], 409);
-        }
+        // If full, application goes on the waiting list
+        $isWaitlist = $session->maxParticipants > 0
+            && $session->currentParticipants >= $session->maxParticipants;
 
         $data = $request->validate([
-            'resume_id'   => 'required_without:resume_file|nullable|uuid|exists:resumes,id',
-            'resume_file' => 'required_without:resume_id|nullable|file|mimes:pdf|max:2048',
+            'resume_id'    => 'required_without:resume_file|nullable|uuid|exists:resumes,id',
+            'resume_file'  => 'required_without:resume_id|nullable|file|mimes:pdf|max:2048',
+            'cover_letter' => 'nullable|string|max:5000',
         ]);
 
         $resumeId = $data['resume_id'] ?? null;
@@ -82,14 +86,14 @@ class TrainingApiController extends Controller
             $path = $file->store('resumes', 'public');
 
             $resume = Resume::create([
-                'filename'       => $file->getClientOriginalName(),
-                'fileUri'        => $path,
-                'userId'         => $user->id,
+                'filename' => $file->getClientOriginalName(),
+                'fileUri' => $path,
+                'userId' => $user->id,
                 'contactDetails' => ['name' => $user->name, 'email' => $user->email],
-                'summary'        => '',
-                'skills'         => '',
-                'experience'     => '',
-                'education'      => '',
+                'summary' => '',
+                'skills' => '',
+                'experience' => '',
+                'education' => '',
             ]);
             $resumeId = $resume->id;
         }
@@ -99,15 +103,20 @@ class TrainingApiController extends Controller
         }
 
         $application = TrainingApplication::create([
-            'trainingSessionId'   => $id,
-            'userId'              => $user->id,
-            'resumeId'            => $resumeId,
-            'status'              => 'pending',
-            'aiGeneratedScore'    => 0,
+            'trainingSessionId'  => $id,
+            'userId'             => $user->id,
+            'resumeId'           => $resumeId,
+            'cover_letter'       => $data['cover_letter'] ?? null,
+            'status'             => 'pending',
+            'is_waitlist'        => $isWaitlist,
+            'aiGeneratedScore'   => 0,
             'aiGeneratedFeedback' => '',
         ]);
 
-        $session->increment('currentParticipants');
+        // Only count toward capacity if not on the waitlist
+        if (! $isWaitlist) {
+            $session->increment('currentParticipants');
+        }
 
         // Analyse IA en arrière-plan (queue)
         AnalyzeTrainingApplicationJob::dispatch($application->id);
@@ -124,6 +133,21 @@ class TrainingApiController extends Controller
             ->paginate(10);
 
         return response()->json($applications);
+    }
+
+    public function withdrawApplication(Request $request, string $id): JsonResponse
+    {
+        $application = TrainingApplication::where('userId', $request->user()->id)
+            ->whereNull('deleted_at')
+            ->findOrFail($id);
+
+        // Only decrement capacity if this app was actually counted (not on waitlist)
+        if (! $application->is_waitlist) {
+            $application->trainingSession()->decrement('currentParticipants');
+        }
+        $application->delete();
+
+        return response()->json(['message' => 'Inscription annulée.']);
     }
 
     // ─── School-Owner ─────────────────────────────────────────────────────────
@@ -152,23 +176,25 @@ class TrainingApiController extends Controller
         }
 
         $data = $request->validate([
-            'title'               => 'required|string|max:255',
-            'description'         => 'required|string|max:5000',
-            'location'            => 'required|string|max:255',
-            'trainingDate'        => 'required|date',
-            'endDate'             => 'nullable|date|after:trainingDate',
-            'startTime'           => 'nullable|string',
-            'endTime'             => 'nullable|string',
-            'maxParticipants'     => 'required|integer|min:1',
-            'status'              => 'required|in:draft,open,closed,cancelled',
-            'salary'              => 'nullable|numeric|min:0',
-            'trainingCategoryId'  => 'required|uuid|exists:training_categories,id',
+            'title' => 'required|string|max:255',
+            'description' => 'required|string|max:5000',
+            'location' => 'required|string|max:255',
+            'trainingDate' => 'required|date',
+            'endDate' => 'nullable|date|after:trainingDate',
+            'startTime' => 'nullable|string',
+            'endTime' => 'nullable|string',
+            'maxParticipants' => 'required|integer|min:1',
+            'status' => 'required|in:open,closed,cancelled',
+            'type' => 'required|in:en_ligne,accelerer,presentiel',
+            'cancellation_reason' => 'nullable|required_if:status,cancelled|string|max:1000',
+            'salary' => 'nullable|numeric|min:0',
+            'trainingCategoryId' => 'required|uuid|exists:training_categories,id',
         ]);
 
         $session = TrainingSession::create(array_merge($data, [
-            'schoolId'           => $school->id,
+            'schoolId' => $school->id,
             'currentParticipants' => 0,
-            'viewCount'          => 0,
+            'viewCount' => 0,
         ]));
 
         return response()->json($session->load(['school', 'trainingCategory']), 201);
@@ -180,16 +206,18 @@ class TrainingApiController extends Controller
         $session = TrainingSession::where('schoolId', $school?->id)->whereNull('deleted_at')->findOrFail($id);
 
         $data = $request->validate([
-            'title'              => 'sometimes|string|max:255',
-            'description'        => 'sometimes|string|max:5000',
-            'location'           => 'sometimes|string|max:255',
-            'trainingDate'       => 'sometimes|date',
-            'endDate'            => 'nullable|date',
-            'startTime'          => 'nullable|string',
-            'endTime'            => 'nullable|string',
-            'maxParticipants'    => 'sometimes|integer|min:1',
-            'status'             => 'sometimes|in:draft,open,closed,cancelled',
-            'salary'             => 'nullable|numeric|min:0',
+            'title' => 'sometimes|string|max:255',
+            'description' => 'sometimes|string|max:5000',
+            'location' => 'sometimes|string|max:255',
+            'trainingDate' => 'sometimes|date',
+            'endDate' => 'nullable|date',
+            'startTime' => 'nullable|string',
+            'endTime' => 'nullable|string',
+            'maxParticipants' => 'sometimes|integer|min:1',
+            'status' => 'sometimes|in:open,closed,cancelled',
+            'type' => 'sometimes|in:en_ligne,accelerer,presentiel',
+            'cancellation_reason' => 'nullable|required_if:status,cancelled|string|max:1000',
+            'salary' => 'nullable|numeric|min:0',
             'trainingCategoryId' => 'sometimes|uuid|exists:training_categories,id',
         ]);
 
@@ -234,7 +262,17 @@ class TrainingApiController extends Controller
             'status' => 'required|in:pending,reviewed,accepted,rejected',
         ]);
 
-        $application->update($data);
+        $newStatus = $data['status'];
+        $wasWaitlist = $application->is_waitlist;
+
+        // Accepting a waitlist app: count it now (may overfill maxParticipants)
+        if ($newStatus === 'accepted' && $wasWaitlist) {
+            $application->trainingSession()->increment('currentParticipants');
+            $application->is_waitlist = false;
+        }
+
+        $application->status = $newStatus;
+        $application->save();
 
         return response()->json($application->load(['user', 'resume', 'trainingSession']));
     }
