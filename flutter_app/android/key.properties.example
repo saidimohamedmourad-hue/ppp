@@ -1,0 +1,7 @@
+# Copier vers android/key.properties (ne pas committer key.properties).
+# Générer le keystore : voir scripts/create_android_keystore.ps1 ou STORE_RELEASE.md
+
+storePassword=VOTRE_MOT_DE_PASSE_KEYSTORE
+keyPassword=VOTRE_MOT_DE_PASSE_CLE
+keyAlias=upload
+storeFile=upload-keystore.jks

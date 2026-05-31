@@ -71,7 +71,23 @@ class JobApiController extends Controller
             'resume_id'    => 'required_without:resume_file|nullable|uuid|exists:resumes,id',
             'resume_file'  => 'required_without:resume_id|nullable|file|mimes:pdf|max:2048',
             'cover_letter' => 'nullable|string|max:5000',
+            // Phone is mandatory on the first job application: recruiters need
+            // a way to contact the candidate. If the user already saved one on
+            // their profile we accept it without re-asking; otherwise the
+            // client must send it in the body.
+            'phone'        => $user->phone ? 'nullable|string|min:6|max:32|regex:/^[0-9+\-\s()]+$/'
+                                           : 'required|string|min:6|max:32|regex:/^[0-9+\-\s()]+$/',
+        ], [
+            'phone.required' => 'Indiquez un numéro de téléphone — les recruteurs s\'en serviront pour vous contacter.',
+            'phone.regex'    => 'Le numéro de téléphone contient des caractères invalides.',
         ]);
+
+        // Persist the phone on the user when supplied — this makes future
+        // applications a 1-click affair and feeds the contact info shown to
+        // recruiters on the application list.
+        if (! empty($data['phone']) && $data['phone'] !== $user->phone) {
+            $user->update(['phone' => $data['phone']]);
+        }
 
         $resumeId = $data['resume_id'] ?? null;
 

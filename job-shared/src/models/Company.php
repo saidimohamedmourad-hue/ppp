@@ -21,6 +21,7 @@ public $incrementing = false;
         "address",
         "industry",
         "website",
+        "phone",
         "ownerId",
     ];
        protected $dates = [

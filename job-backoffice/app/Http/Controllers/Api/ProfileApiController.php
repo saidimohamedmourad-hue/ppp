@@ -24,6 +24,11 @@ class ProfileApiController extends Controller
         $data = $request->validate([
             'name'  => 'sometimes|string|max:255',
             'email' => 'sometimes|email|unique:users,email,' . $user->id,
+            // Phone is freeform; we just sanity-check the shape. Null is
+            // allowed so users can clear it from their profile.
+            'phone' => 'sometimes|nullable|string|min:6|max:32|regex:/^[0-9+\-\s()]+$/',
+        ], [
+            'phone.regex' => 'Le numéro de téléphone contient des caractères invalides.',
         ]);
 
         $user->update($data);

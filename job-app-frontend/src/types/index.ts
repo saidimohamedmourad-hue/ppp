@@ -2,6 +2,8 @@ export interface User {
   id: number
   name: string
   email: string
+  /** Optional in DB but required at app layer for owners + on first job apply. */
+  phone?: string | null
   role: 'job-seeker' | 'company-owner' | 'school-owner' | 'admin'
   photo?: string
 }
@@ -22,6 +24,8 @@ export interface Company {
   logo?: string
   description?: string
   sector?: string
+  /** Public contact phone, shown on job cards. */
+  phone?: string | null
 }
 
 export interface School {
@@ -29,6 +33,8 @@ export interface School {
   name: string
   logo?: string
   description?: string
+  /** Public contact phone, shown on training cards. */
+  phone?: string | null
 }
 
 export interface Job {

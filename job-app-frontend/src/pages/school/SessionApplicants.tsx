@@ -7,7 +7,7 @@ interface Inscription {
   status: 'pending' | 'accepted' | 'rejected'
   is_waitlist?: boolean
   created_at: string
-  user: { id: number; name: string; email: string }
+  user: { id: number; name: string; email: string; phone?: string | null }
   resume?: { url: string; filename: string }
 }
 
@@ -126,8 +126,14 @@ export default function SessionApplicants() {
                       </span>
                     )}
                   </div>
-                  <div style={{ fontSize: 12, color: 'var(--d-muted)' }}>
-                    {ins.user.email} · {new Date(ins.created_at).toLocaleDateString('fr-DZ')}
+                  <div style={{ fontSize: 12, color: 'var(--d-muted)', display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <a href={`mailto:${ins.user.email}`} style={{ color: 'inherit', textDecoration: 'none' }}>✉ {ins.user.email}</a>
+                    {ins.user.phone && (
+                      <a href={`tel:${ins.user.phone}`} style={{ color: '#4fffb0', textDecoration: 'none', fontWeight: 500 }}>
+                        📞 {ins.user.phone}
+                      </a>
+                    )}
+                    <span style={{ opacity: 0.6 }}>· {new Date(ins.created_at).toLocaleDateString('fr-DZ')}</span>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>

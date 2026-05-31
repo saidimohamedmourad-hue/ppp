@@ -7,7 +7,7 @@ interface Applicant {
   status: 'pending' | 'accepted' | 'rejected'
   cover_letter?: string
   created_at: string
-  user: { id: number; name: string; email: string }
+  user: { id: number; name: string; email: string; phone?: string | null }
   resume?: { url: string; filename: string }
 }
 
@@ -116,7 +116,14 @@ export default function JobApplicants() {
                     <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--d-text)' }}>{app.user.name}</span>
                     <span className={STATUS_MAP[app.status]?.cls ?? 'd-status-pending'}>{STATUS_MAP[app.status]?.label}</span>
                   </div>
-                  <div style={{ fontSize: 12, color: 'var(--d-muted)', marginBottom: app.cover_letter ? 10 : 0 }}>{app.user.email}</div>
+                  <div style={{ fontSize: 12, color: 'var(--d-muted)', marginBottom: app.cover_letter ? 10 : 0, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <a href={`mailto:${app.user.email}`} style={{ color: 'inherit', textDecoration: 'none' }}>✉ {app.user.email}</a>
+                    {app.user.phone && (
+                      <a href={`tel:${app.user.phone}`} style={{ color: '#4fffb0', textDecoration: 'none', fontWeight: 500 }}>
+                        📞 {app.user.phone}
+                      </a>
+                    )}
+                  </div>
                   {app.cover_letter && (
                     <div style={{ fontSize: 13, color: 'var(--d-muted2)', background: 'var(--d-surface2)', border: '1px solid var(--d-border)', borderRadius: 8, padding: '10px 14px', marginTop: 8, lineHeight: 1.6 }}>
                       {app.cover_letter}

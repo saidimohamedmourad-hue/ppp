@@ -42,11 +42,14 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'phone',
         'password',
         'role',
         'last_login_at',
         'profile_picture',
         'cv_url',
+        'avatar_url',
+        'email_verified_at',
     ];
 
     protected $dates = [
@@ -95,5 +98,21 @@ class User extends Authenticatable
     public function school()
     {
         return $this->hasOne(School::class, 'ownerId', 'id');
+    }
+
+    /**
+     * Social-auth providers linked to this account (Google, Facebook, Phone…).
+     */
+    public function authProviders()
+    {
+        return $this->hasMany(AuthProvider::class, 'user_id', 'id');
+    }
+
+    /**
+     * Use our French-language reset password notification with an SPA URL.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new \App\Notifications\ResetPasswordFr($token));
     }
 }

@@ -84,6 +84,7 @@ class CompanyController extends Controller
             'address'  => $validated['address'],
             'industry' => $validated['industry'],
             'website'  => $validated['website'] ?? null,
+            'phone'    => $validated['phone'],
             'ownerId'  => $owner->id,
         ]);
 
@@ -134,6 +135,7 @@ class CompanyController extends Controller
             'address' => $validated['address'],
             'industry' => $validated['industry'],
             'website' => $validated['website'] ?? null,
+            'phone' => $validated['phone'],
         ]);
 
         //update owner info

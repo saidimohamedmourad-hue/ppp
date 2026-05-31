@@ -1,0 +1,122 @@
+name: backend
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'job-backoffice/**'
+      - 'job-shared/**'
+      - '.github/workflows/backend.yml'
+  pull_request:
+    paths:
+      - 'job-backoffice/**'
+      - 'job-shared/**'
+      - '.github/workflows/backend.yml'
+  # Re-usable: called by deploy.yml as a pre-flight check before SSH-ing to
+  # production. Without this trigger, `uses: ./.github/workflows/backend.yml`
+  # would fail with "workflow_call not enabled".
+  workflow_call: {}
+
+# Cancel in-flight runs of the same workflow when a newer commit lands.
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pest:
+    name: Pest tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # Use MariaDB rather than MySQL because the project dev uses MariaDB locally
+    # (see ppp/job-backoffice/.env.example DB_CONNECTION). Pinning to a
+    # specific minor version avoids surprises when MariaDB ships a breaking
+    # change in syntax.
+    services:
+      mariadb:
+        image: mariadb:11.4
+        env:
+          MARIADB_DATABASE: iqra_test
+          MARIADB_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    defaults:
+      run:
+        working-directory: job-backoffice
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, curl, mysql, gd, zip, bcmath, intl
+          coverage: none
+          tools: composer:v2
+
+      # Cache Composer's vendor folder. The cache key includes composer.lock
+      # so a dep change invalidates it automatically.
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: job-backoffice/vendor
+          key: composer-${{ runner.os }}-${{ hashFiles('job-backoffice/composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Copy .env for testing
+        run: |
+          cp .env.example .env
+          # Override with the CI-only values that point at the GitHub service
+          # containers and ensure the test suite is fully self-contained.
+          sed -i 's/^DB_HOST=.*/DB_HOST=127.0.0.1/' .env
+          sed -i 's/^DB_DATABASE=.*/DB_DATABASE=iqra_test/' .env
+          sed -i 's/^DB_USERNAME=.*/DB_USERNAME=root/' .env
+          sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=root/' .env
+          sed -i 's|^MAIL_MAILER=.*|MAIL_MAILER=array|' .env
+          sed -i 's/^TURNSTILE_SITE_KEY=.*//' .env
+          sed -i 's/^TURNSTILE_SECRET=.*//' .env
+
+      - name: Generate app key
+        run: php artisan key:generate
+
+      - name: Wait for MariaDB
+        run: |
+          for i in {1..30}; do
+            if mysqladmin ping -h 127.0.0.1 -uroot -proot --silent; then
+              echo "MariaDB up"; exit 0
+            fi
+            echo "Waiting for MariaDB ($i/30)..."; sleep 2
+          done
+          echo "MariaDB never came up"; exit 1
+
+      - name: Run migrations
+        run: php artisan migrate --force --no-interaction
+
+      - name: Run Pest tests
+        run: ./vendor/bin/pest --parallel --processes=2
+
+  composer-audit:
+    name: Composer security audit
+    runs-on: ubuntu-latest
+    # Non-blocking — security warnings should be reviewed but shouldn't break
+    # the build when a CVE is reported against a transitive dep.
+    continue-on-error: true
+    defaults:
+      run:
+        working-directory: job-backoffice
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with: { php-version: '8.3', tools: composer:v2 }
+      - run: composer install --no-interaction --no-progress --prefer-dist
+      - run: composer audit

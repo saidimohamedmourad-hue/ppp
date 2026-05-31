@@ -77,7 +77,16 @@ class TrainingApiController extends Controller
             'resume_id'    => 'required_without:resume_file|nullable|uuid|exists:resumes,id',
             'resume_file'  => 'required_without:resume_id|nullable|file|mimes:pdf|max:2048',
             'cover_letter' => 'nullable|string|max:5000',
+            'phone'        => $user->phone ? 'nullable|string|min:6|max:32|regex:/^[0-9+\-\s()]+$/'
+                                           : 'required|string|min:6|max:32|regex:/^[0-9+\-\s()]+$/',
+        ], [
+            'phone.required' => 'Indiquez un numéro de téléphone — l\'école s\'en servira pour vous contacter.',
+            'phone.regex'    => 'Le numéro de téléphone contient des caractères invalides.',
         ]);
+
+        if (! empty($data['phone']) && $data['phone'] !== $user->phone) {
+            $user->update(['phone' => $data['phone']]);
+        }
 
         $resumeId = $data['resume_id'] ?? null;
 

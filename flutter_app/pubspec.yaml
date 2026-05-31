@@ -1,0 +1,70 @@
+name: job_flutter_app
+description: Application de gestion d'emplois et formations.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Navigation
+  go_router: ^14.6.3
+
+  # HTTP client
+  dio: ^5.7.0
+
+  # Local storage
+  shared_preferences: ^2.3.3
+  flutter_secure_storage: ^9.2.2
+
+  # UI
+  cached_network_image: ^3.4.1
+  shimmer: ^3.0.0
+  flutter_screenutil: ^5.9.3
+
+  # File handling
+  image_picker: ^1.1.2
+  file_picker: ^8.1.6
+
+  # Utilities
+  intl: ^0.19.0
+
+  cupertino_icons: ^1.0.8
+
+  # Auth — social sign-in (Phase 2 of PLAN_AUTH_SOCIAL.md)
+  # Pinned to v6.x — v7 has a fundamentally different stream-based API.
+  google_sign_in: ^6.3.0
+  # Facebook + Instagram (Phase 3). Meta merged Instagram into Facebook Login
+  # in 2024 — IG users with a linked FB account can sign in via this SDK.
+  flutter_facebook_auth: ^7.1.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  # Phase 6 — mock Dio requests in repository tests without hitting the network.
+  http_mock_adapter: ^0.6.1
+  build_runner: ^2.4.13
+  riverpod_generator: ^2.6.2
+  custom_lint: ^0.7.5
+  riverpod_lint: ^2.6.2
+  flutter_launcher_icons: ^0.14.4
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/images/iqra_logo.png
+  adaptive_icon_background: "#071727"
+  adaptive_icon_foreground: assets/images/iqra_logo.png

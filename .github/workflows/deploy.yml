@@ -1,0 +1,98 @@
+name: deploy
+
+# Runs only when a semver tag is pushed (e.g. `git tag v1.2.0 && git push --tags`).
+# A workflow_dispatch trigger is also wired so the maintainer can deploy any
+# branch / SHA from the GitHub UI if needed.
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch, tag or SHA to deploy'
+        required: true
+        default: 'main'
+
+# Prevent two deploys from running at once — they'd race on the server's
+# `php artisan migrate` step and corrupt the BDD.
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    name: Pre-flight tests
+    uses: ./.github/workflows/backend.yml
+    # `concurrency` already serializes deploys; if the tagged commit was
+    # already tested on `main` we still re-run to catch any drift.
+
+  deploy:
+    name: SSH deploy to prod
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # GitHub Environment lets us require manual approval before this job runs
+    # — configure in Settings → Environments → production → "Required
+    # reviewers". Until that's set up, the job auto-runs after preflight.
+    environment:
+      name: production
+      url: https://iqra.app
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compute deploy ref
+        id: ref
+        run: |
+          if [ -n "${{ inputs.ref }}" ]; then
+            echo "ref=${{ inputs.ref }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Secrets to configure in repo Settings → Secrets and variables → Actions:
+      #   PROD_SSH_HOST      e.g. 1.2.3.4 or iqra.app
+      #   PROD_SSH_USER      e.g. iqra
+      #   PROD_SSH_PORT      e.g. 22 (optional, defaults to 22)
+      #   PROD_SSH_KEY       full private key including BEGIN/END markers
+      #   PROD_KNOWN_HOSTS   output of `ssh-keyscan -H <host>` (anti-MITM)
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.PROD_SSH_KEY }}
+
+      - name: Trust the host (known_hosts)
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PROD_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Trigger remote deploy.sh
+        env:
+          PROD_HOST: ${{ secrets.PROD_SSH_HOST }}
+          PROD_USER: ${{ secrets.PROD_SSH_USER }}
+          PROD_PORT: ${{ secrets.PROD_SSH_PORT || '22' }}
+          REF: ${{ steps.ref.outputs.ref }}
+        run: |
+          # The real heavy lifting lives in /var/www/iqra/source/deploy.sh on
+          # the server (see PRODUCTION_CHECKLIST.md §11). We just SSH and run
+          # it with the ref to checkout — keeps secrets and deploy logic on
+          # the server, not in this workflow.
+          ssh -p "$PROD_PORT" "$PROD_USER@$PROD_HOST" \
+              "bash /var/www/iqra/source/deploy.sh '$REF'"
+
+      - name: Smoke check
+        run: |
+          # Health endpoint defined in routes/api.php — see PRODUCTION_CHECKLIST §6.3.
+          for i in {1..12}; do
+            if curl -fs https://api.iqra.app/api/health > /tmp/health.json; then
+              cat /tmp/health.json
+              exit 0
+            fi
+            echo "Health check failed (attempt $i/12), retrying..."
+            sleep 5
+          done
+          echo "::error::Health endpoint did not return 200 after deploy"
+          exit 1

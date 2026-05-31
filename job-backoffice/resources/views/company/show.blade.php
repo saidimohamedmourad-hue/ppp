@@ -38,6 +38,15 @@
                     <p class="text-gray-700"><strong>Website:</strong> <a class="text-blue-500 hover:text-blue-700 underline"
                      href="{{ $company->website }}" target="_blank">{{ $company->website }}</a></p>
                 </div>
+                <div>
+                    <p class="text-gray-700"><strong>Téléphone:</strong>
+                        @if($company->phone)
+                            <a class="text-blue-500 hover:text-blue-700 underline" href="tel:{{ $company->phone }}">{{ $company->phone }}</a>
+                        @else
+                            <span class="text-gray-400">non renseigné</span>
+                        @endif
+                    </p>
+                </div>
             </div>
             <!--edit and archived button-->
             

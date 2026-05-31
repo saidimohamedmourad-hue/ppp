@@ -29,6 +29,7 @@ class SchoolCreateRequest extends FormRequest
             'industry'       => 'required|string|max:255',
             'description'    => 'nullable|string|max:1000',
             'website'        => 'nullable|url|max:255',
+            'phone'          => 'required|string|min:6|max:32|regex:/^[0-9+\-\s()]+$/',
             'owner_mode'     => 'required|in:new,existing',
 
             // Mode: lier un compte existant
@@ -48,6 +49,8 @@ class SchoolCreateRequest extends FormRequest
             'name.unique'            => 'Ce nom d\'école est déjà pris.',
             'address.required'       => 'L\'adresse est requise.',
             'industry.required'      => 'Le secteur est requis.',
+            'phone.required'         => 'Le numéro de téléphone de contact est requis.',
+            'phone.regex'            => 'Le numéro de téléphone contient des caractères invalides.',
             'owner_id.required'      => 'Veuillez sélectionner un utilisateur existant.',
             'owner_id.exists'        => 'L\'utilisateur sélectionné est introuvable.',
             'owner_name.required'    => 'Le nom du propriétaire est requis.',

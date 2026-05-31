@@ -9,31 +9,48 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Remove duplicate job applications — keep only the latest per (userId, jobVacancyId)
-        DB::statement("
-            DELETE ja1 FROM job_applications ja1
-            INNER JOIN job_applications ja2
-            WHERE ja1.userId = ja2.userId
-              AND ja1.jobVacancyId = ja2.jobVacancyId
-              AND ja1.created_at < ja2.created_at
-        ");
-
+        // Drop duplicate rows BEFORE adding the unique constraint. The two
+        // tables are handled identically, so the same closure is reused. We
+        // use Eloquent's groupBy + a per-driver `WHERE id NOT IN (...)` query
+        // so the same migration runs on MySQL, PostgreSQL and SQLite (the
+        // last is required by Pest's in-memory test database).
+        $this->dropDuplicates('job_applications',     'userId', 'jobVacancyId');
         Schema::table('job_applications', function (Blueprint $table) {
             $table->unique(['userId', 'jobVacancyId'], 'unique_user_job_application');
         });
 
-        // Remove duplicate training applications — keep only the latest per (userId, trainingSessionId)
-        DB::statement("
-            DELETE ta1 FROM training_applications ta1
-            INNER JOIN training_applications ta2
-            WHERE ta1.userId = ta2.userId
-              AND ta1.trainingSessionId = ta2.trainingSessionId
-              AND ta1.created_at < ta2.created_at
-        ");
-
+        $this->dropDuplicates('training_applications', 'userId', 'trainingSessionId');
         Schema::table('training_applications', function (Blueprint $table) {
             $table->unique(['userId', 'trainingSessionId'], 'unique_user_training_application');
         });
+    }
+
+    /**
+     * Cross-database "keep only the latest row per (col1, col2) pair" delete.
+     * Identifies the IDs to keep via a groupBy(max(created_at)) on the same
+     * table, then deletes everything else. Works on MySQL/PostgreSQL/SQLite.
+     */
+    private function dropDuplicates(string $table, string $col1, string $col2): void
+    {
+        $keepIds = DB::table($table)
+            ->select(DB::raw('MAX(created_at) AS max_created'), $col1, $col2)
+            ->groupBy($col1, $col2)
+            ->get()
+            ->map(fn ($row) => DB::table($table)
+                ->where($col1, $row->$col1)
+                ->where($col2, $row->$col2)
+                ->where('created_at', $row->max_created)
+                ->value('id'))
+            ->filter()
+            ->all();
+
+        if (empty($keepIds)) {
+            // Empty table — nothing to drop. Skip to avoid `id NOT IN ()`
+            // which is a SQL error on some drivers.
+            return;
+        }
+
+        DB::table($table)->whereNotIn('id', $keepIds)->delete();
     }
 
     public function down(): void

@@ -1,6 +1,7 @@
 ﻿import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { apiFetch } from '@/utils/api'
+import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -87,7 +88,10 @@ export default function Login() {
                 onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')} />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: 8 }}>Mot de passe</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+                <label style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)' }}>Mot de passe</label>
+                <Link to="/forgot-password" style={{ fontSize: 12, color: 'rgba(79,255,176,0.8)', textDecoration: 'none', fontWeight: 500 }}>Oublié ?</Link>
+              </div>
               <input type="password" style={inputStyle} value={password} onChange={e => setPassword(e.target.value)} required placeholder="••••••••"
                 onFocus={e => (e.currentTarget.style.borderColor = '#4fffb0')}
                 onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')} />
@@ -102,6 +106,25 @@ export default function Login() {
               {loading ? 'Connexion...' : 'Se connecter →'}
             </button>
           </form>
+
+          {/* ── Social sign-in (hidden when no provider configured) ── */}
+          {(import.meta.env.VITE_GOOGLE_WEB_CLIENT_ID || import.meta.env.VITE_FACEBOOK_APP_ID) && (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '24px 0' }}>
+                <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }} />
+                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)' }}>ou</span>
+                <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }} />
+              </div>
+              <SocialAuthButtons
+                onSuccess={(token, user) => {
+                  localStorage.setItem('token', token)
+                  localStorage.setItem('user', JSON.stringify(user))
+                  window.location.href = '/dashboard'
+                }}
+                onError={setError}
+              />
+            </>
+          )}
 
           <p style={{ marginTop: 28, textAlign: 'center', fontSize: 14, color: 'rgba(255,255,255,0.35)' }}>
             Pas encore de compte ?{' '}

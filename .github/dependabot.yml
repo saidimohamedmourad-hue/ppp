@@ -1,0 +1,63 @@
+# Weekly dependency updates. PRs are auto-opened by Dependabot — they trigger
+# the normal CI pipeline (backend.yml + web.yml + lint.yml) so we get a green
+# tick before merging.
+#
+# Grouping minor + patch updates into a single PR avoids dozens of tiny PRs
+# every Monday morning.
+
+version: 2
+updates:
+  # Backend Composer
+  - package-ecosystem: composer
+    directory: /job-backoffice
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: 'Africa/Algiers'
+    open-pull-requests-limit: 5
+    groups:
+      laravel:
+        patterns:
+          - 'laravel/*'
+          - 'illuminate/*'
+        update-types: [minor, patch]
+      php-minor-patch:
+        patterns: ['*']
+        update-types: [minor, patch]
+      php-major:
+        patterns: ['*']
+        update-types: [major]
+
+  # Frontend npm
+  - package-ecosystem: npm
+    directory: /job-app-frontend
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: 'Africa/Algiers'
+    open-pull-requests-limit: 5
+    groups:
+      react:
+        patterns: ['react', 'react-dom', 'react-router-dom']
+        update-types: [minor, patch]
+      vite:
+        patterns: ['vite', '@vitejs/*']
+        update-types: [minor, patch]
+      types:
+        patterns: ['@types/*']
+        update-types: [minor, patch]
+      js-minor-patch:
+        patterns: ['*']
+        update-types: [minor, patch]
+      js-major:
+        patterns: ['*']
+        update-types: [major]
+
+  # GitHub Actions themselves
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3

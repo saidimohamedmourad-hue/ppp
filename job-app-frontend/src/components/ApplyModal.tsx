@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { apiFetch } from '@/utils/api'
-import type { Resume } from '@/types'
+import { apiFetch, getUser } from '@/utils/api'
+import type { Resume, User } from '@/types'
 import LoadingSpinner from './LoadingSpinner'
 import ErrorMessage from './ErrorMessage'
 
@@ -15,6 +15,12 @@ export default function ApplyModal({ jobId, jobTitle, onClose, onSuccess }: Prop
   const [resumes, setResumes] = useState<Resume[]>([])
   const [selectedResume, setSelectedResume] = useState<number | null>(null)
   const [coverLetter, setCoverLetter] = useState('')
+  // Phone capture: the backend requires it when the user has no phone on
+  // their profile yet. We show the input only in that case to keep returning
+  // candidates' apply flow a one-click affair.
+  const cachedUser = getUser() as User | null
+  const phoneAlreadyOnFile = !!cachedUser?.phone
+  const [phone, setPhone] = useState(cachedUser?.phone ?? '')
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -28,13 +34,28 @@ export default function ApplyModal({ jobId, jobTitle, onClose, onSuccess }: Prop
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!phoneAlreadyOnFile && phone.trim().length < 6) {
+      setError('Indiquez un numéro de téléphone — les recruteurs s\'en serviront pour vous contacter.')
+      return
+    }
     setSubmitting(true)
     setError(null)
     try {
       await apiFetch(`jobs/${jobId}/apply`, {
         method: 'POST',
-        body: JSON.stringify({ cover_letter: coverLetter, resume_id: selectedResume }),
+        body: JSON.stringify({
+          cover_letter: coverLetter,
+          resume_id: selectedResume,
+          // Only send phone if the user typed one (the backend treats it as
+          // a profile update on first non-empty value).
+          ...(phone.trim() ? { phone: phone.trim() } : {}),
+        }),
       })
+      // Persist the freshly-saved phone in the cached user payload so the
+      // next apply skips this step.
+      if (cachedUser && phone.trim() && phone.trim() !== cachedUser.phone) {
+        localStorage.setItem('user', JSON.stringify({ ...cachedUser, phone: phone.trim() }))
+      }
       onSuccess()
       onClose()
     } catch (err) {
@@ -81,6 +102,24 @@ export default function ApplyModal({ jobId, jobTitle, onClose, onSuccess }: Prop
                 </p>
               )}
             </div>
+
+            {!phoneAlreadyOnFile && (
+              <div>
+                <label className="label">Téléphone <span className="text-red-500">*</span></label>
+                <input
+                  type="tel"
+                  className="input"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+213 555 123 456"
+                  autoComplete="tel"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Le recruteur s'en servira pour vous contacter. Enregistré sur votre profil pour vos prochaines candidatures.
+                </p>
+              </div>
+            )}
 
             <div>
               <label className="label">Lettre de motivation</label>

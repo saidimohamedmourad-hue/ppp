@@ -1,0 +1,79 @@
+name: flutter
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'flutter_app/**'
+      - '.github/workflows/flutter.yml'
+  pull_request:
+    paths:
+      - 'flutter_app/**'
+      - '.github/workflows/flutter.yml'
+
+concurrency:
+  group: flutter-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: Analyze + tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: flutter_app
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Pin to the same Flutter channel the team uses locally. `stable` is
+      # safer than `master` for CI — fewer surprises when Flutter pushes a
+      # breaking change.
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Show Flutter version
+        run: flutter --version
+
+      - name: Pub get
+        run: flutter pub get
+
+      # Run analyze first — cheaper than tests and catches type errors
+      # before we burn time compiling.
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos
+
+      - name: Format check
+        # Detects unformatted code without rewriting it. Set --set-exit-if-changed
+        # so CI fails when someone forgot `dart format`.
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Unit + widget tests
+        run: flutter test --reporter expanded
+
+  # Optional — uncomment when you want a built web artifact uploaded for
+  # smoke testing the SPA build. Disabled by default to keep CI under 5 min.
+  #
+  # build-web:
+  #   name: Build web
+  #   needs: analyze
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 10
+  #   defaults:
+  #     run:
+  #       working-directory: flutter_app
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: subosito/flutter-action@v2
+  #       with: { channel: stable, cache: true }
+  #     - run: flutter pub get
+  #     - run: flutter build web --release
+  #     - uses: actions/upload-artifact@v4
+  #       with:
+  #         name: flutter-web-build
+  #         path: flutter_app/build/web
+  #         retention-days: 7

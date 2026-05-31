@@ -22,3 +22,6 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Backup .env files (created by ops scripts, may contain secrets)
+.env.bak*

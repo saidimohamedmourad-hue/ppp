@@ -1,6 +1,7 @@
 ﻿import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { apiFetch } from '@/utils/api'
+import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons'
 
 type Role = 'job-seeker' | 'company-owner' | 'school-owner'
 
@@ -18,10 +19,16 @@ export default function Register() {
   const [role, setRole] = useState<Role | null>(presetRole)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Phone is mandatory at signup for company-owner and school-owner because
+  // it becomes the public contact number on their jobs/training sessions.
+  // Candidates can leave it blank and provide it on first job application.
+  const needsPhoneAtSignup = role === 'company-owner' || role === 'school-owner'
 
   useEffect(() => {
     if (presetRole) { setRole(presetRole); setStep(2) }
@@ -30,9 +37,21 @@ export default function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (password !== confirm) { setError('Les mots de passe ne correspondent pas.'); return }
+    if (needsPhoneAtSignup && phone.trim().length < 6) {
+      setError('Le numéro de téléphone est obligatoire pour les entreprises et écoles.')
+      return
+    }
     setLoading(true); setError(null)
     try {
-      const res = await apiFetch('register', { method: 'POST', body: JSON.stringify({ name, email, password, password_confirmation: confirm, role }) })
+      const res = await apiFetch('register', {
+        method: 'POST',
+        body: JSON.stringify({
+          name, email, password, password_confirmation: confirm, role,
+          // Send phone whenever the user typed one — backend will validate
+          // it's present for owners and accept it optionally for candidates.
+          ...(phone.trim() ? { phone: phone.trim() } : {}),
+        }),
+      })
       localStorage.setItem('token', res.token)
       localStorage.setItem('user', JSON.stringify(res.user))
       window.location.href = '/dashboard'
@@ -126,6 +145,27 @@ export default function Register() {
                 }}
               >Continuer →</button>
 
+              {/* Social signup shortcut — only for the candidat role since social
+                  accounts default to job-seeker on the backend. Hidden when no
+                  Google client ID is configured. */}
+              {role === 'job-seeker' && (import.meta.env.VITE_GOOGLE_WEB_CLIENT_ID || import.meta.env.VITE_FACEBOOK_APP_ID) && (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '20px 0' }}>
+                    <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }} />
+                    <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)' }}>ou en un clic</span>
+                    <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }} />
+                  </div>
+                  <SocialAuthButtons
+                    onSuccess={(token, user) => {
+                      localStorage.setItem('token', token)
+                      localStorage.setItem('user', JSON.stringify(user))
+                      window.location.href = '/dashboard'
+                    }}
+                    onError={() => {/* silent on the role-selection step */}}
+                  />
+                </>
+              )}
+
               <p style={{ marginTop: 24, textAlign: 'center', fontSize: 14, color: 'rgba(255,255,255,0.35)' }}>
                 Déjà un compte ?{' '}
                 <Link to="/login" style={{ color: '#4fffb0', fontWeight: 600, textDecoration: 'none' }}>Se connecter</Link>
@@ -155,12 +195,29 @@ export default function Register() {
                 {[
                   { label: 'Nom complet', type: 'text', value: name, set: setName, ph: 'Ahmed Benali' },
                   { label: 'Adresse e-mail', type: 'email', value: email, set: setEmail, ph: 'vous@exemple.com' },
+                  {
+                    label: needsPhoneAtSignup
+                      ? 'Téléphone de contact (obligatoire)'
+                      : 'Téléphone (optionnel, requis avant de postuler)',
+                    type: 'tel',
+                    value: phone,
+                    set: setPhone,
+                    ph: '+213 555 123 456',
+                    required: needsPhoneAtSignup,
+                  },
                   { label: 'Mot de passe', type: 'password', value: password, set: setPassword, ph: '8 caractères minimum' },
                   { label: 'Confirmer le mot de passe', type: 'password', value: confirm, set: setConfirm, ph: '••••••••' },
                 ].map(f => (
                   <div key={f.label}>
                     <label style={{ display: 'block', fontSize: 11, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: 8 }}>{f.label}</label>
-                    <input type={f.type} style={inputStyle} value={f.value} onChange={e => f.set(e.target.value)} required={f.type !== 'text' || true} placeholder={f.ph}
+                    <input
+                      type={f.type}
+                      style={inputStyle}
+                      value={f.value}
+                      onChange={e => f.set(e.target.value)}
+                      required={f.type !== 'tel' || (f as { required?: boolean }).required === true}
+                      placeholder={f.ph}
+                      autoComplete={f.type === 'tel' ? 'tel' : undefined}
                       onFocus={e => (e.currentTarget.style.borderColor = '#4fffb0')}
                       onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')} />
                   </div>

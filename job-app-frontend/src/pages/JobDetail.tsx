@@ -88,6 +88,23 @@ export default function JobDetail() {
           {job.description}
         </div>
 
+        {/* Contact (phone is exposed only when it exists — recruiters
+            without one stay anonymous to the candidate). */}
+        {job.company?.phone && (
+          <div style={{ marginTop: 28, padding: '14px 18px', background: 'rgba(79,255,176,0.06)', border: '1px solid rgba(79,255,176,0.18)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontSize: 18 }}>📞</span>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: 1.3 }}>
+                Contact recruteur
+              </div>
+              <a href={`tel:${job.company.phone}`}
+                style={{ fontSize: 15, color: '#4fffb0', fontWeight: 600, textDecoration: 'none' }}>
+                {job.company.phone}
+              </a>
+            </div>
+          </div>
+        )}
+
         {/* Footer actions */}
         {!applied && (
           <div style={{ marginTop: 32, paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.08)' }}>

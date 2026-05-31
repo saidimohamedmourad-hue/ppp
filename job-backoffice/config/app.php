@@ -55,6 +55,13 @@ return [
     'url' => env('APP_URL', 'http://localhost'),
 
     /*
+    | URL of the SPA frontend (React). Used for password-reset email links and
+    | any other transactional email that should point users at the SPA, not at
+    | this Laravel backend.
+    */
+    'frontend_url' => env('APP_FRONTEND_URL', 'http://localhost:3000'),
+
+    /*
     |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------

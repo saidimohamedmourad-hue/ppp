@@ -1,11 +1,13 @@
 ﻿import { useEffect, useState } from 'react'
 import { apiFetch, API_URL, getToken, getUser } from '@/utils/api'
 import type { User } from '@/types'
+import { LinkedAccountsSection } from '@/components/profile/LinkedAccountsSection'
 
 export default function Profile() {
   const [user, setUser] = useState<User | null>(getUser())
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
   const [curPwd, setCurPwd] = useState('')
   const [newPwd, setNewPwd] = useState('')
   const [confPwd, setConfPwd] = useState('')
@@ -18,10 +20,10 @@ export default function Profile() {
     apiFetch('profile')
       .then(res => {
         const u = (res as { data?: User }).data ?? (res as User)
-        setUser(u); setName(u.name); setEmail(u.email)
+        setUser(u); setName(u.name); setEmail(u.email); setPhone(u.phone ?? '')
         localStorage.setItem('user', JSON.stringify(u))
       })
-      .catch(() => { const u = getUser(); if (u) { setName(u.name); setEmail(u.email) } })
+      .catch(() => { const u = getUser(); if (u) { setName(u.name); setEmail(u.email); setPhone(u.phone ?? '') } })
   }, [])
 
   const toast = (type: 'ok' | 'err', text: string) => {
@@ -33,7 +35,7 @@ export default function Profile() {
     e.preventDefault()
     setSavingInfo(true)
     try {
-      const res = await apiFetch('profile', { method: 'PUT', body: JSON.stringify({ name, email }) })
+      const res = await apiFetch('profile', { method: 'PUT', body: JSON.stringify({ name, email, phone: phone.trim() || null }) })
       const u = (res as { data?: User }).data ?? (res as User)
       setUser(u); localStorage.setItem('user', JSON.stringify(u))
       toast('ok', 'Profil mis à jour.')
@@ -104,11 +106,19 @@ export default function Profile() {
           <form onSubmit={saveInfo} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div><label className="d-label">Nom complet</label><input className="d-input" value={name} onChange={e => setName(e.target.value)} required /></div>
             <div><label className="d-label">Email</label><input type="email" className="d-input" value={email} onChange={e => setEmail(e.target.value)} required /></div>
+            <div>
+              <label className="d-label">Téléphone</label>
+              <input type="tel" className="d-input" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+213 555 123 456" autoComplete="tel" />
+              <p style={{ fontSize: 11, color: 'var(--d-muted)', marginTop: 4 }}>
+                Demandé lors de votre première candidature. Visible par les recruteurs pour vous contacter.
+              </p>
+            </div>
             <button type="submit" disabled={savingInfo} className="d-btn-gold" style={{ marginTop: 4 }}>{savingInfo ? 'Enregistrement...' : 'Enregistrer'}</button>
           </form>
         </div>
 
-        {/* Password */}
+        {/* Password — kept for parity; the LinkedAccountsSection below has a
+            richer form that also handles social-only accounts. */}
         <div className="d-card">
           <div className="d-card-title" style={{ marginBottom: 18 }}>Changer le mot de passe</div>
           <form onSubmit={savePwd} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -119,6 +129,9 @@ export default function Profile() {
           </form>
         </div>
       </div>
+
+      {/* Phase 5 — linked social providers + set/change password */}
+      <LinkedAccountsSection />
     </div>
   )
 }

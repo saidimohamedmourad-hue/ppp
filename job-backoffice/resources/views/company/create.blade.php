@@ -53,6 +53,15 @@
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
+                    <div class="mb-4">
+                        <label for="phone" class="block text-gray-700 font-semibold mb-2">Téléphone de contact <span class="text-red-500">*</span></label>
+                        <input type="tel" name="phone" id="phone" value="{{ old('phone') }}" placeholder="+213 555 123 456" required
+                            class="{{ $errors->has('phone') ? 'outline-red-500 outline outline-1' : '' }} w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p class="text-gray-500 text-xs mt-1">Ce numéro sera affiché aux candidats sur chaque offre.</p>
+                        @error('phone')
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
 
                 {{-- Owner Section with Alpine.js toggle --}}

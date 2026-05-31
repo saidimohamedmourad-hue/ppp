@@ -1,0 +1,20 @@
+# Monorepo-level ignores. Sub-projects keep their own .gitignore
+# (job-backoffice, job-app-frontend, flutter_app).
+
+# IDEs / editors
+.vscode/
+.idea/
+.cursor/
+*.iml
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local secrets accidentally pasted at the root
+.env
+.env.local
+
+# Logs at root
+*.log

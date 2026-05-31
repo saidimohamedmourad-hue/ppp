@@ -27,6 +27,7 @@ class SchoolUpdateRequest extends FormRequest
             'industry' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'website' => 'nullable|string|url|max:255',
+            'phone' => 'required|string|min:6|max:32|regex:/^[0-9+\-\s()]+$/',
             'owner_name' => 'required|string|max:255',
             'owner_password' => 'nullable|string|min:8',
         ];

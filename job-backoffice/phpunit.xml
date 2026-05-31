@@ -31,5 +31,10 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <!-- Disable Turnstile in tests: the auth tests pre-date the CAPTCHA
+             integration and assert the legacy behaviour. The widget itself
+             is covered by Playwright E2E. -->
+        <env name="TURNSTILE_SITE_KEY" value=""/>
+        <env name="TURNSTILE_SECRET" value=""/>
     </php>
 </phpunit>

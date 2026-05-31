@@ -7,6 +7,13 @@
             <p><strong>Industry:</strong> {{ $school->industry }}</p>
             <p><strong>Address:</strong> {{ $school->address }}</p>
             <p><strong>Website:</strong> {{ $school->website ?? 'N/A' }}</p>
+            <p><strong>Téléphone:</strong>
+                @if($school->phone)
+                    <a class="text-blue-500 underline" href="tel:{{ $school->phone }}">{{ $school->phone }}</a>
+                @else
+                    <span class="text-gray-400">non renseigné</span>
+                @endif
+            </p>
             <p><strong>Description:</strong> {{ $school->description ?? 'N/A' }}</p>
             <p><strong>Owner:</strong> {{ $school->owner->name ?? 'N/A' }}</p>
         </div>

@@ -73,6 +73,7 @@ class SchoolController extends Controller
             'industry'    => $validated['industry'],
             'description' => $validated['description'] ?? null,
             'website'     => $validated['website'] ?? null,
+            'phone'       => $validated['phone'],
             'ownerId'     => $owner->id,
         ]);
 
@@ -108,6 +109,7 @@ class SchoolController extends Controller
             'industry' => $validated['industry'],
             'description' => $validated['description'] ?? null,
             'website' => $validated['website'] ?? null,
+            'phone' => $validated['phone'],
         ]);
 
         $ownerData = [];

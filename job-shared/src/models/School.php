@@ -23,6 +23,7 @@ class School extends Model
         "industry",
         "description",
         "website",
+        "phone",
         "ownerId",
     ];
     protected $dates = [

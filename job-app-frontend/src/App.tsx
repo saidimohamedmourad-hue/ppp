@@ -19,6 +19,8 @@ import Schools from '@/pages/Schools'
 import SchoolDetail from '@/pages/SchoolDetail'
 import Login from '@/pages/Login'
 import Register from '@/pages/Register'
+import ForgotPassword from '@/pages/ForgotPassword'
+import ResetPassword from '@/pages/ResetPassword'
 
 import Dashboard from '@/pages/dashboard/Dashboard'
 import Profile from '@/pages/dashboard/Profile'
@@ -107,6 +109,8 @@ export default function App() {
         {/* Auth — standalone */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* Dashboard — dark sidebar layout */}
         <Route path="/dashboard" element={<DashboardLayout><Dashboard /></DashboardLayout>} />

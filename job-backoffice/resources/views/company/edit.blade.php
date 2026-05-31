@@ -63,7 +63,16 @@
                 <input type="url" name="website" id="website" value="{{ old('website', $company->website) }}"
                 class="{{ $errors->has('website') ? 'outline-red-500  outline outline-1' : '' }} w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" >
                 @error('website')
-                    <p class="text-red-500 text-sm mt-2">{{ $message }}</p>     
+                    <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
+                @enderror
+            </div>
+            <div class="mb-4">
+                <label for="phone" class="block text-gray-700 font-semibold mb-2">Téléphone de contact <span class="text-red-500">*</span></label>
+                <input type="tel" name="phone" id="phone" value="{{ old('phone', $company->phone) }}" placeholder="+213 555 123 456" required
+                class="{{ $errors->has('phone') ? 'outline-red-500 outline outline-1' : '' }} w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <p class="text-gray-500 text-xs mt-1">Affiché aux candidats sur chaque offre.</p>
+                @error('phone')
+                    <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
                 @enderror
             </div>
         </div>
