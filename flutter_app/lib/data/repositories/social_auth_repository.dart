@@ -35,28 +35,7 @@ class SocialAuthRepository {
       final account = await googleSignIn.signIn();
       if (account == null) return null; // user cancelled
 
-      final auth = await account.authentication;
-      final idToken = auth.idToken;
-      final accessToken = auth.accessToken;
-
-      // Prefer ID token (signed JWT, cheapest backend verification). Fall back
-      // to access_token + userinfo if the platform didn't issue one.
-      final body = <String, dynamic>{};
-      if (idToken != null && idToken.isNotEmpty) {
-        body['id_token'] = idToken;
-      } else if (accessToken != null && accessToken.isNotEmpty) {
-        body['access_token'] = accessToken;
-      } else {
-        throw Exception('Google n\'a pas retourné de jeton utilisable.');
-      }
-
-      final res = await _client.dio.post('/auth/google', data: body);
-      final apiToken = res.data['token'] as String;
-      await _client.setToken(apiToken);
-      return (
-        user: UserModel.fromJson(res.data['user'] as Map<String, dynamic>),
-        token: apiToken,
-      );
+      return await completeGoogleFromAccount(account);
     } on DioException catch (e) {
       // Clean up the Google session so a retry doesn't reuse a stale grant.
       await googleSignIn.signOut().catchError((_) => null);
@@ -66,6 +45,41 @@ class SocialAuthRepository {
       if (kDebugMode) debugPrint('signInWithGoogle: $e');
       rethrow;
     }
+  }
+
+  /// Exchanges an already-authenticated [GoogleSignInAccount] for a Sanctum
+  /// token. Used by the web GIS button flow, where the account arrives through
+  /// `GoogleSignIn.onCurrentUserChanged` rather than from `signIn()`.
+  Future<({UserModel user, String token})> completeGoogleFromAccount(
+    GoogleSignInAccount account,
+  ) async {
+    final auth = await account.authentication;
+    return _exchangeGoogle(idToken: auth.idToken, accessToken: auth.accessToken);
+  }
+
+  /// POSTs the Google token to the backend and persists the returned Sanctum
+  /// token. Prefers the signed ID token (cheapest to verify); falls back to an
+  /// opaque access_token (web implicit flow) when no ID token was issued.
+  Future<({UserModel user, String token})> _exchangeGoogle({
+    String? idToken,
+    String? accessToken,
+  }) async {
+    final body = <String, dynamic>{};
+    if (idToken != null && idToken.isNotEmpty) {
+      body['id_token'] = idToken;
+    } else if (accessToken != null && accessToken.isNotEmpty) {
+      body['access_token'] = accessToken;
+    } else {
+      throw Exception('Google n\'a pas retourné de jeton utilisable.');
+    }
+
+    final res = await _client.dio.post('/auth/google', data: body);
+    final apiToken = res.data['token'] as String;
+    await _client.setToken(apiToken);
+    return (
+      user: UserModel.fromJson(res.data['user'] as Map<String, dynamic>),
+      token: apiToken,
+    );
   }
 
   /// Runs the native Facebook Login flow, then exchanges the access token

@@ -29,6 +29,7 @@ class JobRepository {
     String? fileName,
     Uint8List? fileBytes,
     String? phone,
+    String? educationLevel,
   }) async {
     final hasFile = fileName != null &&
         ((filePath != null && filePath.isNotEmpty) ||
@@ -43,11 +44,13 @@ class JobRepository {
       await _client.dio.post('/jobs/$jobId/apply', data: FormData.fromMap({
         'resume_file': part,
         if (phone != null && phone.isNotEmpty) 'phone': phone,
+        if (educationLevel != null && educationLevel.isNotEmpty) 'education_level': educationLevel,
       }));
     } else {
       await _client.dio.post('/jobs/$jobId/apply', data: {
         'resume_id': resumeId,
         if (phone != null && phone.isNotEmpty) 'phone': phone,
+        if (educationLevel != null && educationLevel.isNotEmpty) 'education_level': educationLevel,
       });
     }
   }

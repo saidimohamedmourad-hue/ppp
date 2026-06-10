@@ -39,11 +39,12 @@ class TrainingSessionUpdateRequest extends FormRequest
             'maxParticipants' => 'required|integer|min:1',
             'currentParticipants' => 'nullable|integer|min:0',
             'status' => 'required|in:open,closed,cancelled',
-            'type' => 'required|in:en_ligne,accelerer,presentiel',
+            'type' => 'required|in:en_ligne,accelerer,presentiel,longue_duree',
             'cancellation_reason' => 'nullable|required_if:status,cancelled|string|max:1000',
             'salary' => 'nullable|string|max:255',
             'trainingCategoryId' => 'required|uuid|exists:training_categories,id',
             'schoolId' => 'required|uuid|exists:schools,id',
+            'min_education_level' => ['required', 'string', \Illuminate\Validation\Rule::in(config('education.levels'))],
         ];
     }
 }

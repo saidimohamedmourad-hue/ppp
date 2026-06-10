@@ -54,11 +54,11 @@
                     @if(request()->input('archived') == 'true')
                     <span class="text-gray-500">{{ $jobApplication->user->name}}</span>
                     @else
-                    <a class="text-blue-500 hover:text-blue-700 underline" 
+                    <a class="text-blue-500 hover:text-blue-700 underline"
                     href="{{ route('job-application.show', $jobApplication->id) }}">{{ $jobApplication->user->name }}</a>
                     @endif
                 </td>
-                
+
                 <td class="px-6 py-4 text-gray-800">
                     {{ $jobApplication->jobVacancy?->title ?? __('Offre supprimée') }}
                     @if ($jobApplication->jobVacancy?->trashed())

@@ -2,6 +2,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { getUser, isLoggedIn, logout } from '@/utils/api'
 import type { User } from '@/types'
+import { NotificationBell } from '@/components/notifications/NotificationBell'
 
 type NavItem = { icon: string; label: string; to: string }
 type NavGroup = { label: string; items: NavItem[] }
@@ -77,6 +78,7 @@ const PAGE_TITLES: Record<string, { title: string; sub: string }> = {
   '/dashboard/job-applications': { title: 'Mes candidatures', sub: 'Suivi de vos candidatures emploi' },
   '/dashboard/training-applications': { title: 'Mes inscriptions', sub: 'Formations auxquelles vous êtes inscrits' },
   '/dashboard/profile': { title: 'Mon profil', sub: 'Gérez vos informations personnelles' },
+  '/dashboard/notifications': { title: 'Notifications', sub: 'Toutes vos notifications récentes' },
   '/dashboard/resumes': { title: 'Mon CV', sub: 'Uploadez et gérez vos CVs' },
   '/dashboard/company/jobs': { title: 'Mes offres d\'emploi', sub: 'Gérez vos annonces et candidatures' },
   '/dashboard/school/sessions': { title: 'Mes formations', sub: 'Gérez vos sessions et inscriptions' },
@@ -174,6 +176,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 style={{ background: 'none', border: 'none', outline: 'none', color: 'var(--d-text)', fontSize: 13, width: '100%', fontFamily: 'Inter, sans-serif' }}
               />
             </div>
+            <NotificationBell />
             <Link to="/" style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--d-surface2)', border: '1px solid var(--d-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, textDecoration: 'none' }} title="Accueil">
               🏠
             </Link>

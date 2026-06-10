@@ -22,7 +22,6 @@
             <div>
                     <p class="text-gray-700"><strong>Company:</strong> {{ $jobVacancy->company->name }}</p>
             </div>
-                
                 <div>
                     <p class="text-gray-700"><strong>Location:</strong> {{ $jobVacancy->location }}</p>
                 </div>

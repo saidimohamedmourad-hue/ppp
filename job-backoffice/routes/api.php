@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\SocialAuthController;
 use App\Http\Controllers\Api\CompanyApiController;
 use App\Http\Controllers\Api\JobApiController;
 use App\Http\Controllers\Api\LinkedAccountsController;
+use App\Http\Controllers\Api\NotificationApiController;
 use App\Http\Controllers\Api\ProfileApiController;
 use App\Http\Controllers\Api\SchoolApiController;
 use App\Http\Controllers\Api\TrainingApiController;
@@ -21,6 +22,8 @@ Route::get('/config', function () {
             'enabled'  => ! empty(config('services.turnstile.secret')),
             'site_key' => config('services.turnstile.site_key'),
         ],
+        // Liste fermée des niveaux d'études (Algérie) — partagée web + Flutter.
+        'education_levels' => config('education.levels'),
     ];
 });
 
@@ -63,6 +66,13 @@ Route::middleware('auth:sanctum')->group(function () {
     // Auth
     Route::post('/logout', [AuthApiController::class, 'logout']);
     Route::get('/me', [AuthApiController::class, 'me']);
+
+    // Notifications (in-app bell + dropdown)
+    Route::get('/notifications',                    [NotificationApiController::class, 'index']);
+    Route::get('/notifications/unread-count',       [NotificationApiController::class, 'unreadCount']);
+    Route::put('/notifications/read-all',           [NotificationApiController::class, 'markAllAsRead']);
+    Route::put('/notifications/{id}/read',          [NotificationApiController::class, 'markAsRead']);
+    Route::delete('/notifications/{id}',            [NotificationApiController::class, 'destroy']);
 
     // Phase 5 — linked social providers + set local password
     Route::prefix('profile/auth-providers')->group(function () {

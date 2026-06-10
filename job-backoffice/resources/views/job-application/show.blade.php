@@ -22,12 +22,17 @@
             <div>
                     <p class="text-gray-700"><strong>Applicant:</strong> {{ $jobApplication->user->name }}</p>
             </div>
-                
+                <div>
+                    <p class="text-gray-700"><strong>Email:</strong> {{ $jobApplication->user->email ?? 'N/A' }}</p>
+                </div>
                 <div>
                     <p class="text-gray-700"><strong>Job Vacancy:</strong> {{ $jobApplication->jobVacancy?->type ?? 'N/A' }}</p>
                 </div>
                 <div>
                     <p class="text-gray-700"><strong>Company:</strong> {{ $jobApplication->jobVacancy?->company?->name ?? 'N/A' }}</p>
+                </div>
+                <div>
+                    <p class="text-gray-700"><strong>Niveau d'études:</strong> {{ $jobApplication->education_level ?? 'Non renseigné' }}</p>
                 </div>
                 <div>
                     <p class="text-gray-700"><strong>Status:</strong >  {{ $jobApplication->status }} </p>

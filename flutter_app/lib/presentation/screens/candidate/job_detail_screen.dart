@@ -51,6 +51,7 @@ class _JobDetailBodyState extends ConsumerState<_JobDetailBody> {
         fileName: selection.fileName,
         fileBytes: selection.fileBytes,
         phone: selection.phone,
+        educationLevel: selection.educationLevel,
       );
       // Refresh the cached user so future applies skip the phone step.
       if (selection.phone != null && selection.phone!.isNotEmpty) {

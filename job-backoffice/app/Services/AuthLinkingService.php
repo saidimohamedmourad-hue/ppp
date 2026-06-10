@@ -30,8 +30,15 @@ class AuthLinkingService
         ?string $email,
         ?string $name,
         ?string $avatar,
-        array $meta = []
+        array $meta = [],
+        string $role = 'job-seeker'
     ): User {
+        // Le rôle demandé n'est appliqué qu'à la CRÉATION d'un nouveau compte
+        // (un utilisateur existant garde son rôle). On le restreint aux rôles
+        // ouverts à l'inscription publique.
+        if (! in_array($role, ['job-seeker', 'company-owner', 'school-owner'], true)) {
+            $role = 'job-seeker';
+        }
         // Case 1 — already linked.
         $existing = AuthProvider::where('provider', $provider)
             ->where('provider_user_id', $providerUserId)
@@ -56,13 +63,13 @@ class AuthLinkingService
             return $user;
         }
 
-        // Case 3 — brand-new account.
-        return DB::transaction(function () use ($provider, $providerUserId, $email, $name, $avatar, $meta) {
+        // Case 3 — brand-new account (rôle choisi à l'inscription).
+        return DB::transaction(function () use ($provider, $providerUserId, $email, $name, $avatar, $meta, $role) {
             $user = User::create([
                 'name'              => $name ?? 'Utilisateur',
                 'email'             => $email,
                 // password stays null — social-only account
-                'role'              => 'job-seeker',
+                'role'              => $role,
                 'avatar_url'        => $avatar,
                 'email_verified_at' => now(),
             ]);

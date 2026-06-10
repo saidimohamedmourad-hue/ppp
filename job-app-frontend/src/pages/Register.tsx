@@ -145,10 +145,11 @@ export default function Register() {
                 }}
               >Continuer →</button>
 
-              {/* Social signup shortcut — only for the candidat role since social
-                  accounts default to job-seeker on the backend. Hidden when no
-                  Google client ID is configured. */}
-              {role === 'job-seeker' && (import.meta.env.VITE_GOOGLE_WEB_CLIENT_ID || import.meta.env.VITE_FACEBOOK_APP_ID) && (
+              {/* Inscription sociale (Google / Facebook) — disponible pour TOUS
+                  les rôles. Le rôle choisi est transmis au backend qui l'applique
+                  uniquement à la création d'un nouveau compte social. Masqué si
+                  aucun fournisseur n'est configuré. */}
+              {role && (import.meta.env.VITE_GOOGLE_WEB_CLIENT_ID || import.meta.env.VITE_FACEBOOK_APP_ID) && (
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '20px 0' }}>
                     <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }} />
@@ -156,6 +157,7 @@ export default function Register() {
                     <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }} />
                   </div>
                   <SocialAuthButtons
+                    role={role}
                     onSuccess={(token, user) => {
                       localStorage.setItem('token', token)
                       localStorage.setItem('user', JSON.stringify(user))

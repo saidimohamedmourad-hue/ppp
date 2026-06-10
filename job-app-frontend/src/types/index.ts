@@ -24,6 +24,10 @@ export interface Company {
   logo?: string
   description?: string
   sector?: string
+  industry?: string
+  address?: string
+  /** Public website URL, shown on the job detail page. */
+  website?: string | null
   /** Public contact phone, shown on job cards. */
   phone?: string | null
 }
@@ -33,6 +37,10 @@ export interface School {
   name: string
   logo?: string
   description?: string
+  industry?: string
+  address?: string
+  /** Public website URL, shown on the training detail page. */
+  website?: string | null
   /** Public contact phone, shown on training cards. */
   phone?: string | null
 }
@@ -49,7 +57,7 @@ export interface Job {
   created_at: string
 }
 
-export type TrainingType = 'en_ligne' | 'accelerer' | 'presentiel'
+export type TrainingType = 'en_ligne' | 'accelerer' | 'presentiel' | 'longue_duree'
 export type TrainingStatus = 'open' | 'closed' | 'cancelled'
 
 export interface TrainingSession {
@@ -67,6 +75,7 @@ export interface TrainingSession {
   maxParticipants?: number
   currentParticipants?: number
   is_full?: boolean
+  min_education_level?: string | null
 }
 
 export interface Resume {

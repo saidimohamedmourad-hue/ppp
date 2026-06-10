@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiFetch, getUser } from '@/utils/api'
 import type { Resume, User } from '@/types'
+import { EDUCATION_LEVELS } from '@/constants/education'
 import LoadingSpinner from './LoadingSpinner'
 import ErrorMessage from './ErrorMessage'
 
@@ -14,13 +15,16 @@ interface Props {
 export default function ApplyModal({ jobId, jobTitle, onClose, onSuccess }: Props) {
   const [resumes, setResumes] = useState<Resume[]>([])
   const [selectedResume, setSelectedResume] = useState<number | null>(null)
+  const [educationLevel, setEducationLevel] = useState('')
   const [coverLetter, setCoverLetter] = useState('')
-  // Phone capture: the backend requires it when the user has no phone on
-  // their profile yet. We show the input only in that case to keep returning
-  // candidates' apply flow a one-click affair.
+  // Phone capture: the backend requires it on the first application of a
+  // candidate. We always show the field — pre-filled from the cached profile
+  // if any — so the user can confirm or correct before posting. Hiding it
+  // when "we think" the profile already has a phone confused users when the
+  // cache was stale (server-side phone got cleared, dirty localStorage…).
   const cachedUser = getUser() as User | null
-  const phoneAlreadyOnFile = !!cachedUser?.phone
   const [phone, setPhone] = useState(cachedUser?.phone ?? '')
+  const [phoneFromServer, setPhoneFromServer] = useState<string | null>(cachedUser?.phone ?? null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -30,11 +34,34 @@ export default function ApplyModal({ jobId, jobTitle, onClose, onSuccess }: Prop
       .then((res) => setResumes(res.data ?? res))
       .catch(() => setResumes([]))
       .finally(() => setLoading(false))
+    // Re-fetch the live user too — the cached payload may have been stored
+    // before we added the phone column, in which case `cachedUser.phone` is
+    // undefined and we'd otherwise keep the input empty.
+    apiFetch('me')
+      .then((res) => {
+        const u = (res as { data?: User }).data ?? (res as User)
+        if (u?.phone && !phone) setPhone(u.phone)
+        setPhoneFromServer(u?.phone ?? null)
+        // Refresh the cache too so other screens see the new value.
+        if (u) localStorage.setItem('user', JSON.stringify(u))
+      })
+      .catch(() => {})
+    // We only want this on mount; phone state is the controlled input.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!phoneAlreadyOnFile && phone.trim().length < 6) {
+    // CV obligatoire pour une candidature à un emploi.
+    if (!selectedResume) {
+      setError('Sélectionnez un CV — il est obligatoire pour postuler à une offre.')
+      return
+    }
+    if (!educationLevel) {
+      setError('Sélectionnez votre niveau d\'études.')
+      return
+    }
+    if (phone.trim().length < 6) {
       setError('Indiquez un numéro de téléphone — les recruteurs s\'en serviront pour vous contacter.')
       return
     }
@@ -46,6 +73,7 @@ export default function ApplyModal({ jobId, jobTitle, onClose, onSuccess }: Prop
         body: JSON.stringify({
           cover_letter: coverLetter,
           resume_id: selectedResume,
+          education_level: educationLevel,
           // Only send phone if the user typed one (the backend treats it as
           // a profile update on first non-empty value).
           ...(phone.trim() ? { phone: phone.trim() } : {}),
@@ -84,13 +112,16 @@ export default function ApplyModal({ jobId, jobTitle, onClose, onSuccess }: Prop
             {error && <ErrorMessage message={error} />}
 
             <div>
-              <label className="label">CV sélectionné</label>
+              <label className="label">
+                CV sélectionné <span className="text-red-500">*</span>
+              </label>
               <select
                 className="input"
                 value={selectedResume ?? ''}
                 onChange={(e) => setSelectedResume(e.target.value ? Number(e.target.value) : null)}
+                required
               >
-                <option value="">-- Aucun CV --</option>
+                <option value="">-- Choisir un CV --</option>
                 {resumes.map((r) => (
                   <option key={r.id} value={r.id}>{r.filename}</option>
                 ))}
@@ -103,23 +134,42 @@ export default function ApplyModal({ jobId, jobTitle, onClose, onSuccess }: Prop
               )}
             </div>
 
-            {!phoneAlreadyOnFile && (
-              <div>
-                <label className="label">Téléphone <span className="text-red-500">*</span></label>
-                <input
-                  type="tel"
-                  className="input"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+213 555 123 456"
-                  autoComplete="tel"
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Le recruteur s'en servira pour vous contacter. Enregistré sur votre profil pour vos prochaines candidatures.
-                </p>
-              </div>
-            )}
+            <div>
+              <label className="label">
+                Niveau d'études <span className="text-red-500">*</span>
+              </label>
+              <select
+                className="input"
+                value={educationLevel}
+                onChange={(e) => setEducationLevel(e.target.value)}
+                required
+              >
+                <option value="">-- Sélectionnez votre niveau --</option>
+                {EDUCATION_LEVELS.map((lvl) => (
+                  <option key={lvl} value={lvl}>{lvl}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="label">
+                Téléphone <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="tel"
+                className="input"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+213 555 123 456"
+                autoComplete="tel"
+                required
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {phoneFromServer
+                  ? 'Confirmez ou modifiez le numéro avant d\'envoyer.'
+                  : 'Le recruteur s\'en servira pour vous contacter. Enregistré sur votre profil pour vos prochaines candidatures.'}
+              </p>
+            </div>
 
             <div>
               <label className="label">Lettre de motivation</label>

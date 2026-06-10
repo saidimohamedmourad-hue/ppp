@@ -26,11 +26,12 @@ class TrainingCategoryModel {
   );
 }
 
-/// Training format/type. Backend values: en_ligne | accelerer | presentiel.
+/// Training format/type. Backend values: en_ligne | accelerer | presentiel | longue_duree.
 enum TrainingType {
   enLigne('en_ligne', 'En ligne'),
   accelerer('accelerer', 'Accéléré'),
-  presentiel('presentiel', 'Présentiel');
+  presentiel('presentiel', 'Présentiel'),
+  longueDuree('longue_duree', 'Longue durée');
 
   final String value;
   final String label;
@@ -61,6 +62,7 @@ class TrainingSessionModel {
   final DateTime? endDate;
   final SchoolModel? school;
   final TrainingCategoryModel? trainingCategory;
+  final String? minEducationLevel;
   final DateTime createdAt;
 
   const TrainingSessionModel({
@@ -81,6 +83,7 @@ class TrainingSessionModel {
     this.endDate,
     this.school,
     this.trainingCategory,
+    this.minEducationLevel,
   });
 
   // Use the API-provided `is_full` flag when present, otherwise derive locally.
@@ -108,6 +111,7 @@ class TrainingSessionModel {
     trainingCategory: json['training_category'] != null
         ? TrainingCategoryModel.fromJson(json['training_category'] as Map<String, dynamic>)
         : null,
+    minEducationLevel: json['min_education_level'] as String?,
   );
 }
 

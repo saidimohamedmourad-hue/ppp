@@ -43,7 +43,8 @@
               <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Address</th>
                 <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Industry</th>
                   <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Website</th>
-              
+                  <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Téléphone</th>
+
               <th class="px-6 py-3 text-left text-sm font-semibold text-gray-800">actions</th>
             </tr>
             </thead>
@@ -61,6 +62,13 @@
                        <td class="px-6 py-4 text-gray-800">{{ $company->address }}</td>
                               <td class="px-6 py-4 text-gray-800">{{ $company->industry }}</td>
                                      <td class="px-6 py-4 text-gray-800">{{ $company->website }}</td>
+                                     <td class="px-6 py-4 text-gray-800">
+                                         @if($company->phone)
+                                             <a class="text-blue-500 hover:text-blue-700 underline" href="tel:{{ $company->phone }}">{{ $company->phone }}</a>
+                                         @else
+                                             <span class="text-gray-400">—</span>
+                                         @endif
+                                     </td>
                 <td >
                     <div class="flex space-x-4">
                         @if (request()->input('archived') == 'true')

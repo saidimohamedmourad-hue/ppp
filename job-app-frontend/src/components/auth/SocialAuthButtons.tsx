@@ -8,6 +8,9 @@ interface Props {
   onSuccess: (token: string, user: unknown) => void
   /** Optional error sink — wired up to the page-level error banner. */
   onError?: (message: string) => void
+  /** Rôle souhaité à l'inscription (appliqué seulement si nouveau compte).
+   *  Sans effet pour un compte social existant (il garde son rôle). */
+  role?: string
 }
 
 /**
@@ -34,7 +37,7 @@ export function SocialAuthButtons(props: Props) {
 /**
  * Standalone Facebook-only path. Used when no Google client is configured.
  */
-function FacebookOnlyButtons({ onSuccess, onError }: Props) {
+function FacebookOnlyButtons({ onSuccess, onError, role }: Props) {
   const [busy, setBusy] = useState(false)
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -43,6 +46,7 @@ function FacebookOnlyButtons({ onSuccess, onError }: Props) {
         setBusy={setBusy}
         onSuccess={onSuccess}
         onError={onError}
+        role={role}
       />
     </div>
   )
@@ -53,7 +57,7 @@ function FacebookOnlyButtons({ onSuccess, onError }: Props) {
  * The `useGoogleLogin` hook throws if the provider is missing, so we must
  * gate it behind the `hasGoogle` check above.
  */
-function SocialAuthButtonsInner({ onSuccess, onError, hasFacebook }: Props & { hasFacebook: boolean }) {
+function SocialAuthButtonsInner({ onSuccess, onError, hasFacebook, role }: Props & { hasFacebook: boolean }) {
   const [busy, setBusy] = useState<string | null>(null)
 
   // We use the implicit auth-code flow with `flow: 'implicit'` (= ID token),
@@ -74,7 +78,7 @@ function SocialAuthButtonsInner({ onSuccess, onError, hasFacebook }: Props & { h
         // we'll feed it the cleanest path via a server-side userinfo call.
         const r = await apiFetch('auth/google', {
           method: 'POST',
-          body: JSON.stringify({ access_token: resp.access_token }),
+          body: JSON.stringify({ access_token: resp.access_token, ...(role ? { role } : {}) }),
         }) as { token: string; user: unknown }
         onSuccess(r.token, r.user)
       } catch (e) {
@@ -114,6 +118,7 @@ function SocialAuthButtonsInner({ onSuccess, onError, hasFacebook }: Props & { h
           setBusy={(b) => setBusy(b ? 'facebook' : null)}
           onSuccess={onSuccess}
           onError={onError}
+          role={role}
         />
       )}
     </div>
@@ -125,12 +130,13 @@ function SocialAuthButtonsInner({ onSuccess, onError, hasFacebook }: Props & { h
  * Facebook-only path can share the exact same logic.
  */
 function FacebookButton({
-  busy, setBusy, onSuccess, onError,
+  busy, setBusy, onSuccess, onError, role,
 }: {
   busy: boolean
   setBusy: (b: boolean) => void
   onSuccess: (token: string, user: unknown) => void
   onError?: (msg: string) => void
+  role?: string
 }) {
   const handleClick = async () => {
     const appId = import.meta.env.VITE_FACEBOOK_APP_ID
@@ -144,7 +150,7 @@ function FacebookButton({
       const auth = await facebookLogin(FB)
       const r = await apiFetch('auth/facebook', {
         method: 'POST',
-        body: JSON.stringify({ access_token: auth.accessToken }),
+        body: JSON.stringify({ access_token: auth.accessToken, ...(role ? { role } : {}) }),
       }) as { token: string; user: unknown }
       onSuccess(r.token, r.user)
     } catch (e) {

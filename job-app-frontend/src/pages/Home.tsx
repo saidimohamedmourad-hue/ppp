@@ -21,14 +21,7 @@ export default function Home() {
           <img src="/iqra-logo.png" alt="IQRA" style={{ width: 28, height: 28, borderRadius: 7, objectFit: 'cover' }} />
           IQRA
         </Link>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 28, flex: 1 }}>
-          {([['Offres', '/jobs'], ['Formations', '/trainings'], ['Entreprises', '/companies'], ['Écoles', '/schools']] as [string, string][]).map(([l, h]) => (
-            <Link key={l} to={h} style={{ color: 'rgba(255,255,255,0.55)', textDecoration: 'none', fontSize: 14, fontWeight: 500, transition: 'color .2s' }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'white')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}
-            >{l}</Link>
-          ))}
-        </div>
+        <div style={{ flex: 1 }} />
         <div style={{ display: 'flex', gap: 10 }}>
           {loggedIn ? (
             <Link to={spaceHref} style={{ padding: '8px 20px', borderRadius: 100, background: '#4fffb0', color: '#080c14', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
@@ -245,14 +238,6 @@ export default function Home() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: '"Syne", sans-serif', fontWeight: 800, fontSize: 18, color: 'white' }}>
           <img src="/iqra-logo.png" alt="IQRA" style={{ width: 26, height: 26, borderRadius: 6, objectFit: 'cover' }} />
           IQRA
-        </div>
-        <div style={{ display: 'flex', gap: 28 }}>
-          {([['Offres', '/jobs'], ['Formations', '/trainings'], ['Entreprises', '/companies'], ['Écoles', '/schools']] as [string, string][]).map(([l, h]) => (
-            <Link key={l} to={h} style={{ textDecoration: 'none', color: 'rgba(255,255,255,0.35)', fontSize: 13, transition: 'color .2s' }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.7)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
-            >{l}</Link>
-          ))}
         </div>
         <p style={{ color: 'rgba(255,255,255,0.22)', fontSize: 13 }}>© 2026 IQRA · Algérie</p>
       </footer>

@@ -68,9 +68,13 @@ class JobApiController extends Controller
         }
 
         $data = $request->validate([
+            // CV obligatoire pour une candidature à un emploi : il faut fournir
+            // soit un CV existant, soit un fichier PDF.
             'resume_id'    => 'required_without:resume_file|nullable|uuid|exists:resumes,id',
             'resume_file'  => 'required_without:resume_id|nullable|file|mimes:pdf|max:2048',
             'cover_letter' => 'nullable|string|max:5000',
+            // Niveau d'études (Algérie) : obligatoire, parmi la liste fermée.
+            'education_level' => ['required', 'string', \Illuminate\Validation\Rule::in(config('education.levels'))],
             // Phone is mandatory on the first job application: recruiters need
             // a way to contact the candidate. If the user already saved one on
             // their profile we accept it without re-asking; otherwise the
@@ -80,6 +84,8 @@ class JobApiController extends Controller
         ], [
             'phone.required' => 'Indiquez un numéro de téléphone — les recruteurs s\'en serviront pour vous contacter.',
             'phone.regex'    => 'Le numéro de téléphone contient des caractères invalides.',
+            'education_level.required' => 'Sélectionnez votre niveau d\'études.',
+            'education_level.in'       => 'Niveau d\'études invalide.',
         ]);
 
         // Persist the phone on the user when supplied — this makes future
@@ -118,6 +124,7 @@ class JobApiController extends Controller
             'userId'             => $user->id,
             'resumeId'           => $resumeId,
             'cover_letter'       => $data['cover_letter'] ?? null,
+            'education_level'    => $data['education_level'],
             'status'             => 'pending',
             'aiGeneratedScore'   => 0,
             'aiGeneratedFeedback' => '',
@@ -125,6 +132,19 @@ class JobApiController extends Controller
 
         // Analyse IA en arrière-plan (queue)
         AnalyzeJobApplicationJob::dispatch($application->id);
+
+        // Notify the company-owner (in-app bell + email). Wrapped so a mail
+        // transport failure (e.g. SMTP timeout) never rolls back the
+        // application the candidate just submitted — the bell row is what
+        // matters most; email is best-effort.
+        $companyOwner = $job->company?->owner;
+        if ($companyOwner) {
+            try {
+                $companyOwner->notify(new \App\Notifications\JobApplicationReceived($application));
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
 
         return response()->json($application->load(['jobVacancy.company', 'resume']), 201);
     }
@@ -240,11 +260,31 @@ class JobApiController extends Controller
             ->findOrFail($applicationId);
 
         $data = $request->validate([
-            'status' => 'required|in:pending,reviewed,shortlisted,rejected',
+            'status' => 'required|in:pending,reviewed,shortlisted,accepted,rejected',
         ]);
 
+        $previousStatus = $application->status;
         $application->update($data);
 
-        return response()->json($application->load(['user', 'resume', 'jobVacancy']));
+        // Notify the candidate only when the status actually changes, and skip
+        // intermediate `reviewed` (just "seen") to avoid spamming the user
+        // unless an entreprise wants a paper trail. Tweak this if Product
+        // decides reviewed should also notify.
+        if ($previousStatus !== $application->status && $application->user) {
+            try {
+                $application->user->notify(new \App\Notifications\JobApplicationStatusChanged($application->fresh()));
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+
+        // Return a lean, guaranteed-encodable payload. We deliberately avoid
+        // re-serializing the whole model graph (jobVacancy description / AI
+        // feedback can hold bytes that trip Laravel's strict JSON encoder).
+        // The SPA only needs the new status to update its local row.
+        return response()->json([
+            'id'     => $application->id,
+            'status' => $application->status,
+        ]);
     }
 }

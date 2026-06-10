@@ -132,6 +132,7 @@
                             <thead>
                                 <tr>
                                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Applicant Name</th>
+                                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Téléphone</th>
                                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Job Title</th>
                                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Status</th>
                                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Action</th>
@@ -141,6 +142,13 @@
                                 @foreach ($company->jobapplications as $application)
                                 <tr>
                                     <td class="px-6 py-4 text-sm text-gray-900">{{ $application->user->name }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-900">
+                                        @if($application->user?->phone)
+                                            <a class="text-blue-500 hover:text-blue-700 underline" href="tel:{{ $application->user->phone }}">{{ $application->user->phone }}</a>
+                                        @else
+                                            <span class="text-gray-400">—</span>
+                                        @endif
+                                    </td>
                                     <td class="px-6 py-4 text-sm text-gray-900">{{ $application->jobVacancy?->title ?? __('Offre supprimée') }}</td>
                                     <td class="px-6 py-4 text-sm text-gray-900">{{ $application->status }}</td>
                                     <td class="px-6 py-4 text-sm text-gray-900">

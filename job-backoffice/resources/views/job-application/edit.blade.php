@@ -22,7 +22,6 @@
            <div>
                     <p class="text-gray-700"><strong>Applicant:</strong> {{ $jobApplication->user->name }}</p>
             </div>
-                
                 <div>
                     <p class="text-gray-700"><strong>Job Vacancy:</strong> {{ $jobApplication->jobVacancy?->type ?? 'N/A' }}</p>
                 </div>

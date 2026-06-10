@@ -88,20 +88,40 @@ export default function JobDetail() {
           {job.description}
         </div>
 
-        {/* Contact (phone is exposed only when it exists — recruiters
-            without one stay anonymous to the candidate). */}
-        {job.company?.phone && (
-          <div style={{ marginTop: 28, padding: '14px 18px', background: 'rgba(79,255,176,0.06)', border: '1px solid rgba(79,255,176,0.18)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: 18 }}>📞</span>
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: 1.3 }}>
-                Contact recruteur
-              </div>
-              <a href={`tel:${job.company.phone}`}
-                style={{ fontSize: 15, color: '#4fffb0', fontWeight: 600, textDecoration: 'none' }}>
-                {job.company.phone}
-              </a>
+        {/* Company contact card — phone / website / address, each shown only
+            when present so recruiters control how reachable they are. */}
+        {(job.company?.phone || job.company?.website || job.company?.address) && (
+          <div style={{ marginTop: 28, padding: '18px 20px', background: 'rgba(79,255,176,0.06)', border: '1px solid rgba(79,255,176,0.18)', borderRadius: 12, display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: 1.3 }}>
+              Contact recruteur — {job.company?.name}
             </div>
+
+            {job.company?.phone && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 16 }}>📞</span>
+                <a href={`tel:${job.company.phone}`} style={{ fontSize: 14, color: '#4fffb0', fontWeight: 600, textDecoration: 'none' }}>
+                  {job.company.phone}
+                </a>
+              </div>
+            )}
+
+            {job.company?.website && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 16 }}>🌐</span>
+                <a href={job.company.website.startsWith('http') ? job.company.website : `https://${job.company.website}`}
+                  target="_blank" rel="noopener noreferrer"
+                  style={{ fontSize: 14, color: '#60a5fa', fontWeight: 500, textDecoration: 'none' }}>
+                  {job.company.website}
+                </a>
+              </div>
+            )}
+
+            {job.company?.address && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 16 }}>📍</span>
+                <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)' }}>{job.company.address}</span>
+              </div>
+            )}
           </div>
         )}
 

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/education_levels.dart';
 import '../providers/resume_provider.dart';
 
 /// Résultat de la sélection dans le bottom sheet.
@@ -18,34 +19,54 @@ class ApplySelection {
   /// pas encore sur son profil. À transmettre tel quel au backend qui le
   /// persistera sur le profil au moment de la candidature.
   final String? phone;
+  /// Niveau d'études (Algérie) — toujours obligatoire.
+  final String? educationLevel;
 
-  const ApplySelection({this.resumeId, this.filePath, this.fileName, this.fileBytes, this.phone});
+  const ApplySelection({
+    this.resumeId,
+    this.filePath,
+    this.fileName,
+    this.fileBytes,
+    this.phone,
+    this.educationLevel,
+  });
 
-  bool get isValid {
+  bool get hasCv {
     if (resumeId != null) return true;
     if (fileName == null || fileName!.isEmpty) return false;
     if (filePath != null) return true;
     return fileBytes != null && fileBytes!.isNotEmpty;
   }
+
+  /// Le niveau d'études est obligatoire ; le CV l'est seulement pour les emplois
+  /// (cette contrainte est vérifiée en amont par le bottom sheet via cvRequired).
+  bool get isValid => educationLevel != null && educationLevel!.isNotEmpty;
 }
 
 /// Affiche un bottom sheet pour choisir un CV existant ou uploader un nouveau PDF.
 ///
 /// Si [needsPhone] est vrai (le compte n'a pas de numéro), un champ téléphone
 /// supplémentaire apparaît, obligatoire.
+/// [cvRequired] vaut true pour une candidature emploi (CV obligatoire) et
+/// false pour une inscription formation (CV facultatif).
 /// Retourne un [ApplySelection] ou null si annulé.
-Future<ApplySelection?> showApplyBottomSheet(BuildContext context, {bool needsPhone = false}) {
+Future<ApplySelection?> showApplyBottomSheet(
+  BuildContext context, {
+  bool needsPhone = false,
+  bool cvRequired = true,
+}) {
   return showModalBottomSheet<ApplySelection>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (_) => _ApplyBottomSheet(needsPhone: needsPhone),
+    builder: (_) => _ApplyBottomSheet(needsPhone: needsPhone, cvRequired: cvRequired),
   );
 }
 
 class _ApplyBottomSheet extends ConsumerStatefulWidget {
-  const _ApplyBottomSheet({required this.needsPhone});
+  const _ApplyBottomSheet({required this.needsPhone, required this.cvRequired});
   final bool needsPhone;
+  final bool cvRequired;
 
   @override
   ConsumerState<_ApplyBottomSheet> createState() => _ApplyBottomSheetState();
@@ -56,6 +77,7 @@ class _ApplyBottomSheetState extends ConsumerState<_ApplyBottomSheet> {
   String? _uploadedFilePath;
   Uint8List? _uploadedFileBytes;
   String? _uploadedFileName;
+  String? _educationLevel;
   final _phoneCtrl = TextEditingController();
 
   @override
@@ -96,13 +118,37 @@ class _ApplyBottomSheetState extends ConsumerState<_ApplyBottomSheet> {
             ),
             const SizedBox(height: 16),
 
+            // Niveau d'études (Algérie) — obligatoire.
             const Text(
-              'Choisir un CV',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              'Niveau d\'études *',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              initialValue: _educationLevel,
+              isExpanded: true,
+              decoration: const InputDecoration(
+                hintText: 'Sélectionnez votre niveau',
+                prefixIcon: Icon(Icons.school_outlined),
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              ),
+              items: kEducationLevels
+                  .map((lvl) => DropdownMenuItem(value: lvl, child: Text(lvl)))
+                  .toList(),
+              onChanged: (v) => setState(() => _educationLevel = v),
+            ),
+            const SizedBox(height: 20),
+
+            Text(
+              widget.cvRequired ? 'Choisir un CV *' : 'Choisir un CV (optionnel)',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
             Text(
-              'Sélectionnez un CV existant ou importez un nouveau fichier PDF.',
+              widget.cvRequired
+                  ? 'Sélectionnez un CV existant ou importez un nouveau fichier PDF.'
+                  : 'Facultatif pour une formation. En ajouter un améliore l\'analyse de votre profil.',
               style: TextStyle(fontSize: 13, color: Colors.grey[600]),
             ),
             const SizedBox(height: 16),
@@ -282,10 +328,13 @@ class _ApplyBottomSheetState extends ConsumerState<_ApplyBottomSheet> {
   }
 
   bool _canSubmit() {
+    // Niveau d'études toujours obligatoire.
+    if (_educationLevel == null || _educationLevel!.isEmpty) return false;
     final hasCv = _selectedResumeId != null
         || _uploadedFilePath != null
         || (_uploadedFileBytes != null && _uploadedFileBytes!.isNotEmpty);
-    if (!hasCv) return false;
+    // CV obligatoire seulement pour une candidature emploi.
+    if (widget.cvRequired && !hasCv) return false;
     if (widget.needsPhone) {
       final t = _phoneCtrl.text.trim();
       if (t.length < 6) return false;
@@ -303,6 +352,7 @@ class _ApplyBottomSheetState extends ConsumerState<_ApplyBottomSheet> {
         fileName: _uploadedFileName,
         fileBytes: _uploadedFileBytes,
         phone: widget.needsPhone ? _phoneCtrl.text.trim() : null,
+        educationLevel: _educationLevel,
       ),
     );
   }

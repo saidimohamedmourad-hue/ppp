@@ -15,14 +15,22 @@
             <tbody>
                 @forelse($categories as $category)
                     <tr class="border-b">
-                        <td class="px-6 py-4"><a class="text-blue-500 underline" href="{{ route('training-category.show', $category->id) }}">{{ $category->name }}</a></td>
-                        <td class="px-6 py-4">
-                            @if (request()->input('archived') == 'true')
-                                <form action="{{ route('training-category.restore', $category->id) }}" method="POST">@csrf @method('PUT')<button type="submit" class="text-green-600">Restore</button></form>
+                        <td class="px-6 py-4 text-gray-800">
+                            @if(request()->input('archived') == 'true')
+                                <span class="text-gray-500">{{ $category->name }}</span>
                             @else
-                                <a href="{{ route('training-category.edit', $category->id) }}" class="text-blue-500 mr-4">Edit</a>
-                                <form action="{{ route('training-category.destroy', $category->id) }}" method="POST" class="inline-block">@csrf @method('DELETE')<button type="submit" class="text-red-600">Archive</button></form>
+                                <a class="text-blue-500 hover:text-blue-700 underline" href="{{ route('training-category.show', $category->id) }}">{{ $category->name }}</a>
                             @endif
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex space-x-4">
+                                @if (request()->input('archived') == 'true')
+                                    <form action="{{ route('training-category.restore', $category->id) }}" method="POST" class="inline-block">@csrf @method('PUT')<button type="submit" class="text-green-600 hover:text-green-700">♻️Restore</button></form>
+                                @else
+                                    <a href="{{ route('training-category.edit', $category->id) }}" class="text-blue-500 hover:text-blue-700">✍️Edit</a>
+                                    <form action="{{ route('training-category.destroy', $category->id) }}" method="POST" class="inline-block">@csrf @method('DELETE')<button type="submit" class="text-red-600 hover:text-red-700">🗃️Archive</button></form>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                 @empty

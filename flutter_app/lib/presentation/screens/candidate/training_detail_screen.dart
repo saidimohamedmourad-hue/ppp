@@ -16,10 +16,15 @@ class TrainingDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sessionAsync = ref.watch(trainingDetailProvider(sessionId));
-    return sessionAsync.when(
-      data: (s) => _TrainingDetailBody(session: s),
-      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (e, _) => Scaffold(body: Center(child: Text(e.toString()))),
+    // Enveloppe dans un Scaffold (comme job_detail) pour hériter du fond
+    // sombre du thème ; sans lui, l'écran s'affichait sur un fond par défaut
+    // et jurait avec le reste de l'application.
+    return Scaffold(
+      body: sessionAsync.when(
+        data: (s) => _TrainingDetailBody(session: s),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text(e.toString())),
+      ),
     );
   }
 }
@@ -37,7 +42,8 @@ class _TrainingDetailBodyState extends ConsumerState<_TrainingDetailBody> {
 
   Future<void> _apply() async {
     final needsPhone = !(ref.read(authProvider).valueOrNull?.hasPhone ?? true);
-    final selection = await showApplyBottomSheet(context, needsPhone: needsPhone);
+    // CV facultatif pour une inscription à une formation.
+    final selection = await showApplyBottomSheet(context, needsPhone: needsPhone, cvRequired: false);
     if (selection == null || !selection.isValid) return;
 
     setState(() => _applying = true);
@@ -49,6 +55,7 @@ class _TrainingDetailBodyState extends ConsumerState<_TrainingDetailBody> {
         fileName: selection.fileName,
         fileBytes: selection.fileBytes,
         phone: selection.phone,
+        educationLevel: selection.educationLevel,
       );
       if (selection.phone != null && selection.phone!.isNotEmpty) {
         await ref.read(authProvider.notifier).refreshUser();
@@ -83,6 +90,7 @@ class _TrainingDetailBodyState extends ConsumerState<_TrainingDetailBody> {
       case TrainingType.enLigne: return AppColors.blue;
       case TrainingType.accelerer: return AppColors.gold;
       case TrainingType.presentiel: return AppColors.mint;
+      case TrainingType.longueDuree: return const Color(0xFFA78BFA);
     }
   }
 
@@ -159,6 +167,8 @@ class _TrainingDetailBodyState extends ConsumerState<_TrainingDetailBody> {
                     _InfoRow(icon: Icons.people_outline, label: '${s.currentParticipants}/${s.maxParticipants} participants'),
                     if (s.salary != null && s.salary! > 0) _InfoRow(icon: Icons.attach_money, label: '${s.salary!.toStringAsFixed(0)} DA'),
                     if (s.trainingCategory != null) _InfoRow(icon: Icons.category_outlined, label: s.trainingCategory!.name),
+                    if (s.minEducationLevel != null && s.minEducationLevel!.isNotEmpty)
+                      _InfoRow(icon: Icons.school_outlined, label: 'Niveau min. requis : ${s.minEducationLevel}'),
                     const SizedBox(height: 24),
                     const Text('Description', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),

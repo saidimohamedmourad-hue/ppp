@@ -1,7 +1,12 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../providers/auth_provider.dart';
+import '../../widgets/google_web_button.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/repositories/social_auth_repository.dart';
 
@@ -21,11 +26,49 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _googleBusy = false;
   bool _facebookBusy = false;
 
+  // Web only: GIS delivers the signed-in account through this stream after the
+  // user clicks the rendered button (GoogleSignIn.signIn() throws on web).
+  StreamSubscription<GoogleSignInAccount?>? _googleWebSub;
+  final GoogleSignIn _webGoogle = GoogleSignIn(
+    scopes: const ['email', 'profile', 'openid'],
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    if (kIsWeb) {
+      _googleWebSub = _webGoogle.onCurrentUserChanged.listen((account) {
+        if (account != null) _completeWebGoogle(account);
+      });
+      // Surfaces One Tap / auto-select if the user already granted access.
+      _webGoogle.signInSilently();
+    }
+  }
+
   @override
   void dispose() {
+    _googleWebSub?.cancel();
     _email.dispose();
     _password.dispose();
     super.dispose();
+  }
+
+  /// Web: exchange the GIS-provided account for a Sanctum token.
+  Future<void> _completeWebGoogle(GoogleSignInAccount account) async {
+    setState(() => _googleBusy = true);
+    try {
+      await SocialAuthRepository().completeGoogleFromAccount(account);
+      await ref.read(authProvider.notifier).refreshUser();
+    } catch (e) {
+      await _webGoogle.signOut().catchError((_) => null);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString()), backgroundColor: AppColors.error),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _googleBusy = false);
+    }
   }
 
   Future<void> _submit() async {
@@ -201,22 +244,40 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: 24),
               // ── Google sign-in ─────────────────────────────────────────
-              OutlinedButton.icon(
-                onPressed: _googleBusy ? null : _signInWithGoogle,
-                icon: _googleBusy
+              // Web: render the official GIS button (signIn() throws on web).
+              // Mobile: keep the custom button calling the native flow.
+              if (kIsWeb)
+                _googleBusy
                     ? const SizedBox(
-                        width: 18, height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.mint),
+                        height: 52,
+                        child: Center(
+                          child: SizedBox(
+                            width: 22, height: 22,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.mint),
+                          ),
+                        ),
                       )
-                    : const _GoogleLogo(),
-                label: Text(_googleBusy ? 'Connexion…' : 'Continuer avec Google'),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 52),
-                  side: const BorderSide(color: AppColors.border, width: 1),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                    : Align(
+                        alignment: Alignment.center,
+                        child: googleRenderButton(),
+                      )
+              else
+                OutlinedButton.icon(
+                  onPressed: _googleBusy ? null : _signInWithGoogle,
+                  icon: _googleBusy
+                      ? const SizedBox(
+                          width: 18, height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.mint),
+                        )
+                      : const _GoogleLogo(),
+                  label: Text(_googleBusy ? 'Connexion…' : 'Continuer avec Google'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 52),
+                    side: const BorderSide(color: AppColors.border, width: 1),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  ),
                 ),
-              ),
               const SizedBox(height: 12),
               // ── Facebook sign-in ───────────────────────────────────────
               ElevatedButton.icon(

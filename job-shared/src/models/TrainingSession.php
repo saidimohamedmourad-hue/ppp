@@ -33,6 +33,7 @@ class TrainingSession extends Model
         'viewCount',
         "trainingCategoryId",
         "schoolId",
+        "min_education_level",
     ];
 
     protected $appends = ['is_full'];

@@ -1,5 +1,7 @@
-﻿import { useEffect, useState } from 'react'
-import { apiFetch, isLoggedIn } from '@/utils/api'
+﻿import { useEffect, useState, type ReactNode } from 'react'
+import { apiFetch, isLoggedIn, getUser } from '@/utils/api'
+import type { User } from '@/types'
+import { EDUCATION_LEVELS } from '@/constants/education'
 
 interface RawJob {
   id: string
@@ -8,6 +10,7 @@ interface RawJob {
   type?: string
   salary?: number
   description?: string
+  viewCount?: number
   company?: { id: string; name: string }
   jobCategory?: { id: string; name: string }
 }
@@ -27,23 +30,50 @@ function Spin() {
 }
 
 function ApplyModal({ job, onClose, onDone }: { job: RawJob; onClose: () => void; onDone: () => void }) {
+  const cachedUser = getUser() as User | null
   const [resumes, setResumes] = useState<RawResume[]>([])
   const [resumeId, setResumeId] = useState('')
+  const [educationLevel, setEducationLevel] = useState('')
   const [cover, setCover] = useState('')
+  // Phone is mandatory on the first job application — keep the input visible
+  // even after we've cached one, so the candidate can update an outdated
+  // number before posting. Stale localStorage was eating the input before.
+  const [phone, setPhone] = useState(cachedUser?.phone ?? '')
+  const [phoneFromServer, setPhoneFromServer] = useState<string | null>(cachedUser?.phone ?? null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     apiFetch('resumes').then(r => setResumes((r as { data?: RawResume[] }).data ?? (r as RawResume[]))).catch(() => {}).finally(() => setLoading(false))
+    // Re-sync the cached profile so phoneFromServer reflects the real state
+    // (the cache may predate the introduction of the phone column).
+    apiFetch('me').then((res) => {
+      const u = (res as { data?: User }).data ?? (res as User)
+      if (u?.phone && !phone) setPhone(u.phone)
+      setPhoneFromServer(u?.phone ?? null)
+      if (u) localStorage.setItem('user', JSON.stringify(u))
+    }).catch(() => {})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!resumeId) { setError('Veuillez sélectionner un CV.'); return }
+    if (!educationLevel) { setError('Sélectionnez votre niveau d\'études.'); return }
+    if (phone.trim().length < 6) {
+      setError("Indiquez un numéro de téléphone — les recruteurs s'en serviront pour vous contacter.")
+      return
+    }
     setSaving(true); setError(null)
     try {
-      await apiFetch(`jobs/${job.id}/apply`, { method: 'POST', body: JSON.stringify({ resume_id: resumeId, cover_letter: cover || undefined }) })
+      await apiFetch(`jobs/${job.id}/apply`, {
+        method: 'POST',
+        body: JSON.stringify({ resume_id: resumeId, education_level: educationLevel, cover_letter: cover || undefined, phone: phone.trim() }),
+      })
+      if (cachedUser && phone.trim() !== cachedUser.phone) {
+        localStorage.setItem('user', JSON.stringify({ ...cachedUser, phone: phone.trim() }))
+      }
       onDone(); onClose()
     } catch (err) { setError(err instanceof Error ? err.message : 'Erreur') }
     finally { setSaving(false) }
@@ -73,6 +103,32 @@ function ApplyModal({ job, onClose, onDone }: { job: RawJob; onClose: () => void
               )}
             </div>
             <div>
+              <label style={{ fontSize: 12, color: 'var(--d-muted)', fontWeight: 500, display: 'block', marginBottom: 6 }}>Niveau d'études <span style={{ color: 'var(--d-red)' }}>*</span></label>
+              <select className="d-input" value={educationLevel} onChange={e => setEducationLevel(e.target.value)} required>
+                <option value="">-- Sélectionnez votre niveau --</option>
+                {EDUCATION_LEVELS.map(lvl => <option key={lvl} value={lvl}>{lvl}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={{ fontSize: 12, color: 'var(--d-muted)', fontWeight: 500, display: 'block', marginBottom: 6 }}>
+                Téléphone <span style={{ color: '#f87171' }}>*</span>
+              </label>
+              <input
+                type="tel"
+                className="d-input"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+213 555 123 456"
+                autoComplete="tel"
+                required
+              />
+              <p style={{ fontSize: 11, color: 'var(--d-muted2)', marginTop: 4 }}>
+                {phoneFromServer
+                  ? 'Confirmez ou modifiez le numéro avant d\'envoyer.'
+                  : 'Le recruteur s\'en servira pour vous contacter. Enregistré sur votre profil pour vos prochaines candidatures.'}
+              </p>
+            </div>
+            <div>
               <label style={{ fontSize: 12, color: 'var(--d-muted)', fontWeight: 500, display: 'block', marginBottom: 6 }}>Lettre de motivation (optionnel)</label>
               <textarea className="d-input" rows={4} value={cover} onChange={e => setCover(e.target.value)} placeholder="Décrivez votre motivation..." style={{ resize: 'vertical' }} />
             </div>
@@ -89,6 +145,62 @@ function ApplyModal({ job, onClose, onDone }: { job: RawJob; onClose: () => void
   )
 }
 
+// Modal de détails : reste sur la page (overlay) et compte une vue en
+// appelant l'endpoint détail (qui incrémente viewCount côté serveur).
+function JobDetailsModal({ id, onClose }: { id: string; onClose: () => void }) {
+  const [job, setJob] = useState<RawJob | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    setLoading(true)
+    apiFetch(`jobs/${id}`)
+      .then(res => setJob((res as { data?: RawJob }).data ?? (res as RawJob)))
+      .catch(err => setError(err instanceof Error ? err.message : 'Erreur'))
+      .finally(() => setLoading(false))
+  }, [id])
+
+  const Row = ({ label, value }: { label: string; value?: ReactNode }) =>
+    value == null || value === '' ? null : (
+      <div style={{ display: 'flex', gap: 10, fontSize: 13, padding: '6px 0', borderBottom: '1px solid var(--d-border)' }}>
+        <span style={{ color: 'var(--d-muted)', minWidth: 130, flexShrink: 0 }}>{label}</span>
+        <span style={{ color: 'var(--d-text)' }}>{value}</span>
+      </div>
+    )
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }} onClick={onClose}>
+      <div style={{ background: 'var(--d-surface)', border: '1px solid var(--d-border)', borderRadius: 20, padding: 28, width: '100%', maxWidth: 560, maxHeight: '85vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16, gap: 12 }}>
+          <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 22, color: 'var(--d-text)', margin: 0 }}>{job?.title ?? 'Détails de l\'offre'}</h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--d-muted)', fontSize: 22, cursor: 'pointer', lineHeight: 1 }}>✕</button>
+        </div>
+        {loading ? <Spin /> : error ? (
+          <div style={{ color: 'var(--d-red)', fontSize: 13 }}>{error}</div>
+        ) : job && (
+          <div>
+            <Row label="Entreprise" value={job.company?.name} />
+            <Row label="Type" value={job.type} />
+            <Row label="Catégorie" value={job.jobCategory?.name} />
+            <Row label="Lieu" value={job.location} />
+            <Row label="Salaire" value={job.salary != null ? `${Number(job.salary).toLocaleString()} DA` : undefined} />
+            <Row label="Vues" value={job.viewCount} />
+            {job.description && (
+              <div style={{ marginTop: 14 }}>
+                <div style={{ color: 'var(--d-muted)', fontSize: 13, marginBottom: 6 }}>Description</div>
+                <div style={{ color: 'var(--d-text)', fontSize: 13.5, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{job.description}</div>
+              </div>
+            )}
+          </div>
+        )}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}>
+          <button onClick={onClose} className="d-btn-secondary" style={{ cursor: 'pointer' }}>Fermer</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function DashboardJobs() {
   const [jobs, setJobs] = useState<RawJob[]>([])
   const [categories, setCategories] = useState<RawCategory[]>([])
@@ -100,6 +212,7 @@ export default function DashboardJobs() {
   const [jobType, setJobType] = useState('')
   const [page, setPage] = useState(1)
   const [applyJob, setApplyJob] = useState<RawJob | null>(null)
+  const [detailsId, setDetailsId] = useState<string | null>(null)
   const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
@@ -170,7 +283,13 @@ export default function DashboardJobs() {
             <div key={job.id} className="d-card" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 20px' }}>
               <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(79,255,176,0.08)', border: '1px solid rgba(79,255,176,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>🏢</div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--d-text)', marginBottom: 3 }}>{job.title}</div>
+                <div style={{ marginBottom: 3 }}>
+                  <span role="button" tabIndex={0} onClick={() => setDetailsId(job.id)}
+                    style={{ fontSize: 14, fontWeight: 600, color: 'var(--d-text)', cursor: 'pointer' }}
+                    onMouseOver={e => (e.currentTarget.style.textDecoration = 'underline')}
+                    onMouseOut={e => (e.currentTarget.style.textDecoration = 'none')}
+                    title="Voir les détails">{job.title}</span>
+                </div>
                 <div style={{ fontSize: 12, color: 'var(--d-muted)' }}>
                   {job.company?.name}{job.location ? ` · 📍 ${job.location}` : ''}
                   {job.salary != null ? ` · ${Number(job.salary).toLocaleString()} DA` : ''}
@@ -210,6 +329,9 @@ export default function DashboardJobs() {
           onDone={() => setAppliedIds(prev => new Set([...prev, applyJob.id]))}
         />
       )}
+
+      {/* Details modal — stays on the page, counts a view via the detail endpoint */}
+      {detailsId && <JobDetailsModal id={detailsId} onClose={() => setDetailsId(null)} />}
     </div>
   )
 }

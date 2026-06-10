@@ -42,18 +42,54 @@ class CompanyApiController extends Controller
             ->whereNull('deleted_at')
             ->count();
 
+        $acceptedApplications = JobApplication::whereIn('jobVacancyId', $jobIds)
+            ->where('status', 'accepted')
+            ->whereNull('deleted_at')
+            ->count();
+
+        // Candidats actifs (job-seekers connectés sur les 30 derniers jours
+        // ayant postulé à au moins une offre de cette entreprise).
+        $activeUsers = \App\Models\User::where('role', 'job-seeker')
+            ->where('last_login_at', '>=', now()->subDays(30))
+            ->whereHas('jobApplications', fn ($q) => $q->whereIn('jobVacancyId', $jobIds)->whereNull('deleted_at'))
+            ->count();
+
+        // Total des vues cumulées des offres de l'entreprise.
+        $totalViews = (int) JobVacancy::whereIn('id', $jobIds)->sum('viewCount');
+
+        // Top 5 offres : chaque modèle expose déjà viewCount (colonne) et
+        // totalCount (alias withCount) -> le front calcule le taux de conversion.
         $mostApplied = JobVacancy::withCount('jobApplications as totalCount')
             ->whereIn('id', $jobIds)
             ->orderByDesc('totalCount')
             ->limit(5)
             ->get();
 
+        // Candidatures récentes (pour le tableau "Candidatures récentes").
+        $recentApplicants = JobApplication::whereIn('jobVacancyId', $jobIds)
+            ->whereNull('deleted_at')
+            ->with(['user:id,name,email', 'jobVacancy:id,title'])
+            ->latest()
+            ->limit(8)
+            ->get()
+            ->map(fn ($a) => [
+                'id'         => $a->id,
+                'status'     => $a->status,
+                'created_at' => $a->created_at,
+                'user'       => ['id' => $a->user?->id, 'name' => $a->user?->name, 'email' => $a->user?->email],
+                'job'        => ['id' => $a->jobVacancy?->id, 'title' => $a->jobVacancy?->title],
+            ]);
+
         return response()->json([
-            'company'             => $company,
-            'totalJobs'           => $totalJobs,
-            'totalApplications'   => $totalApplications,
-            'pendingApplications' => $pendingApplications,
-            'mostAppliedJobs'     => $mostApplied,
+            'company'              => $company,
+            'totalJobs'            => $totalJobs,
+            'totalApplications'    => $totalApplications,
+            'pendingApplications'  => $pendingApplications,
+            'acceptedApplications' => $acceptedApplications,
+            'activeUsers'          => $activeUsers,
+            'totalViews'           => $totalViews,
+            'mostAppliedJobs'      => $mostApplied,
+            'recentApplicants'     => $recentApplicants,
         ]);
     }
 

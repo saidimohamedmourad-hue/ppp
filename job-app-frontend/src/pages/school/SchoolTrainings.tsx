@@ -1,6 +1,7 @@
 ﻿import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { apiFetch } from '@/utils/api'
+import { EDUCATION_LEVELS } from '@/constants/education'
 
 interface TrainingCategory { id: string; name: string }
 
@@ -29,13 +30,14 @@ interface SessionForm {
   type: string
   cancellation_reason: string
   trainingCategoryId: string
+  min_education_level: string
 }
 
 const EMPTY_FORM: SessionForm = {
   title: '', description: '', location: '', trainingDate: '',
   endDate: '', maxParticipants: '', salary: '', status: 'open',
   type: 'presentiel', cancellation_reason: '',
-  trainingCategoryId: '',
+  trainingCategoryId: '', min_education_level: '',
 }
 
 export default function SchoolTrainings() {
@@ -82,6 +84,7 @@ export default function SchoolTrainings() {
           type:                form.type,
           cancellation_reason: form.status === 'cancelled' ? form.cancellation_reason : undefined,
           trainingCategoryId:  form.trainingCategoryId || undefined,
+          min_education_level: form.min_education_level || undefined,
         }),
       })
       setShowModal(false)
@@ -207,8 +210,19 @@ export default function SchoolTrainings() {
                     <option value="presentiel">Présentiel</option>
                     <option value="en_ligne">En ligne</option>
                     <option value="accelerer">Accéléré</option>
+                    <option value="longue_duree">Longue durée</option>
                   </select>
                 </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: 12, color: 'var(--d-muted)', fontWeight: 500, display: 'block', marginBottom: 6 }}>Niveau d'études minimum requis *</label>
+                <select className="d-input" value={form.min_education_level} onChange={f('min_education_level')} required>
+                  <option value="">-- Sélectionnez --</option>
+                  {EDUCATION_LEVELS.map((lvl) => (
+                    <option key={lvl} value={lvl}>{lvl}</option>
+                  ))}
+                </select>
               </div>
 
               <div>

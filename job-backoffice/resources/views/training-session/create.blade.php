@@ -107,11 +107,25 @@
                     <label for="type" class="block text-gray-700 font-semibold mb-2">Type</label>
                     <select name="type" id="type"
                         class="{{ $errors->has('type') ? 'outline-red-500 outline outline-1' : '' }} w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        @foreach (['presentiel' => 'Présentiel', 'en_ligne' => 'En ligne', 'accelerer' => 'Accéléré'] as $value => $label)
+                        @foreach (['presentiel' => 'Présentiel', 'en_ligne' => 'En ligne', 'accelerer' => 'Accéléré', 'longue_duree' => 'Longue durée'] as $value => $label)
                             <option value="{{ $value }}" @selected(old('type', 'presentiel') === $value)>{{ $label }}</option>
                         @endforeach
                     </select>
                     @error('type')
+                        <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="mb-4">
+                    <label for="min_education_level" class="block text-gray-700 font-semibold mb-2">Niveau d'études minimum requis <span class="text-red-500">*</span></label>
+                    <select name="min_education_level" id="min_education_level"
+                        class="{{ $errors->has('min_education_level') ? 'outline-red-500 outline outline-1' : '' }} w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">-- Sélectionnez --</option>
+                        @foreach (config('education.levels') as $level)
+                            <option value="{{ $level }}" @selected(old('min_education_level') === $level)>{{ $level }}</option>
+                        @endforeach
+                    </select>
+                    @error('min_education_level')
                         <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
                     @enderror
                 </div>

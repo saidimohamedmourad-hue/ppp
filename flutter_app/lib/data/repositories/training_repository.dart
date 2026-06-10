@@ -29,6 +29,7 @@ class TrainingRepository {
     String? fileName,
     Uint8List? fileBytes,
     String? phone,
+    String? educationLevel,
   }) async {
     final hasFile = fileName != null &&
         ((filePath != null && filePath.isNotEmpty) ||
@@ -43,11 +44,14 @@ class TrainingRepository {
       await _client.dio.post('/training-sessions/$sessionId/apply', data: FormData.fromMap({
         'resume_file': part,
         if (phone != null && phone.isNotEmpty) 'phone': phone,
+        if (educationLevel != null && educationLevel.isNotEmpty) 'education_level': educationLevel,
       }));
     } else {
+      // CV facultatif pour une formation : n'envoyer resume_id que s'il existe.
       await _client.dio.post('/training-sessions/$sessionId/apply', data: {
-        'resume_id': resumeId,
+        if (resumeId != null) 'resume_id': resumeId,
         if (phone != null && phone.isNotEmpty) 'phone': phone,
+        if (educationLevel != null && educationLevel.isNotEmpty) 'education_level': educationLevel,
       });
     }
   }

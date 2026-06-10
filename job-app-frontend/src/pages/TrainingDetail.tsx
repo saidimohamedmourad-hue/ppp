@@ -8,11 +8,13 @@ const TYPE_LABELS: Record<TrainingType, string> = {
   presentiel: 'Présentiel',
   en_ligne: 'En ligne',
   accelerer: 'Accéléré',
+  longue_duree: 'Longue durée',
 }
 const TYPE_COLORS: Record<TrainingType, string> = {
   presentiel: '#4fffb0',
   en_ligne: '#60a5fa',
   accelerer: '#f0c45a',
+  longue_duree: '#a78bfa',
 }
 
 export default function TrainingDetail() {
@@ -131,6 +133,11 @@ export default function TrainingDetail() {
             </span>
           )}
           {training.category && <span style={{ fontSize: 13, background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', padding: '5px 12px', borderRadius: 100 }}>{training.category.name}</span>}
+          {training.min_education_level && (
+            <span style={{ fontSize: 13, background: 'rgba(96,165,250,0.12)', color: '#60a5fa', padding: '5px 12px', borderRadius: 100, fontWeight: 600 }}>
+              🎓 Niveau min : {training.min_education_level}
+            </span>
+          )}
         </div>
 
         {/* Divider */}
@@ -141,19 +148,39 @@ export default function TrainingDetail() {
           {training.description}
         </div>
 
-        {/* Contact (school phone, when present). */}
-        {training.school?.phone && (
-          <div style={{ marginTop: 28, padding: '14px 18px', background: 'rgba(79,255,176,0.06)', border: '1px solid rgba(79,255,176,0.18)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: 18 }}>📞</span>
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: 1.3 }}>
-                Contact école
-              </div>
-              <a href={`tel:${training.school.phone}`}
-                style={{ fontSize: 15, color: '#4fffb0', fontWeight: 600, textDecoration: 'none' }}>
-                {training.school.phone}
-              </a>
+        {/* School contact card — phone / website / address, each conditional. */}
+        {(training.school?.phone || training.school?.website || training.school?.address) && (
+          <div style={{ marginTop: 28, padding: '18px 20px', background: 'rgba(79,255,176,0.06)', border: '1px solid rgba(79,255,176,0.18)', borderRadius: 12, display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: 1.3 }}>
+              Contact école — {training.school?.name}
             </div>
+
+            {training.school?.phone && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 16 }}>📞</span>
+                <a href={`tel:${training.school.phone}`} style={{ fontSize: 14, color: '#4fffb0', fontWeight: 600, textDecoration: 'none' }}>
+                  {training.school.phone}
+                </a>
+              </div>
+            )}
+
+            {training.school?.website && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 16 }}>🌐</span>
+                <a href={training.school.website.startsWith('http') ? training.school.website : `https://${training.school.website}`}
+                  target="_blank" rel="noopener noreferrer"
+                  style={{ fontSize: 14, color: '#60a5fa', fontWeight: 500, textDecoration: 'none' }}>
+                  {training.school.website}
+                </a>
+              </div>
+            )}
+
+            {training.school?.address && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 16 }}>📍</span>
+                <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)' }}>{training.school.address}</span>
+              </div>
+            )}
           </div>
         )}
 

@@ -27,6 +27,15 @@
                     <p class="text-gray-700"><strong>Email:</strong> {{ $user->email }}</p>
                 </div>
                 <div>
+                    <p class="text-gray-700"><strong>Téléphone:</strong>
+                        @if($user->phone)
+                            <a class="text-blue-500 hover:text-blue-700 underline" href="tel:{{ $user->phone }}">{{ $user->phone }}</a>
+                        @else
+                            <span class="text-gray-400">non renseigné</span>
+                        @endif
+                    </p>
+                </div>
+                <div>
                     <p class="text-gray-700"><strong>Role:</strong> {{ $user->role}}</p>
                 </div>
               

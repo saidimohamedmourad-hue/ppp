@@ -24,6 +24,7 @@ import ResetPassword from '@/pages/ResetPassword'
 
 import Dashboard from '@/pages/dashboard/Dashboard'
 import Profile from '@/pages/dashboard/Profile'
+import Notifications from '@/pages/dashboard/Notifications'
 import Resumes from '@/pages/dashboard/Resumes'
 import JobApplications from '@/pages/dashboard/JobApplications'
 import TrainingApplications from '@/pages/dashboard/TrainingApplications'
@@ -117,6 +118,7 @@ export default function App() {
         <Route path="/dashboard/jobs" element={<DashboardLayout><DashboardJobs /></DashboardLayout>} />
         <Route path="/dashboard/trainings" element={<DashboardLayout><DashboardTrainings /></DashboardLayout>} />
         <Route path="/dashboard/profile" element={<DashboardLayout><Profile /></DashboardLayout>} />
+        <Route path="/dashboard/notifications" element={<DashboardLayout><Notifications /></DashboardLayout>} />
         <Route path="/dashboard/resumes" element={<DashboardLayout><Resumes /></DashboardLayout>} />
         <Route path="/dashboard/job-applications" element={<DashboardLayout><JobApplications /></DashboardLayout>} />
         <Route path="/dashboard/training-applications" element={<DashboardLayout><TrainingApplications /></DashboardLayout>} />

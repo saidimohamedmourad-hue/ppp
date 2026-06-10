@@ -25,6 +25,7 @@ class JobApplication extends Model
         "userId",
         "resumeId",
         "cover_letter",
+        "education_level",
     ];
 
       protected $dates = [

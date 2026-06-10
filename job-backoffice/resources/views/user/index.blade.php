@@ -37,6 +37,7 @@
             <tr>
             <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900"> Name</th>
               <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Email</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Téléphone</th>
                 <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Role</th>
            
               
@@ -55,6 +56,13 @@
                 </td>
                 
                 <td class="px-6 py-4 text-gray-800">{{ $user->email }}</td>
+                <td class="px-6 py-4 text-gray-800">
+                    @if($user->phone)
+                        <a class="text-blue-500 hover:text-blue-700 underline" href="tel:{{ $user->phone }}">{{ $user->phone }}</a>
+                    @else
+                        <span class="text-gray-400">—</span>
+                    @endif
+                </td>
                 <td class="px-6 py-4 text-gray-800">{{ $user->role }}</td>
                 
                 

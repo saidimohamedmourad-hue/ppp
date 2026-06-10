@@ -43,18 +43,50 @@ class SchoolApiController extends Controller
             ->whereNull('deleted_at')
             ->count();
 
+        $acceptedApplications = TrainingApplication::whereIn('trainingSessionId', $sessionIds)
+            ->where('status', 'accepted')
+            ->whereNull('deleted_at')
+            ->count();
+
+        // Candidats actifs (job-seekers connectés sur 30 jours ayant postulé
+        // à au moins une session de cette école).
+        $activeUsers = \App\Models\User::where('role', 'job-seeker')
+            ->where('last_login_at', '>=', now()->subDays(30))
+            ->whereHas('trainingApplications', fn ($q) => $q->whereIn('trainingSessionId', $sessionIds)->whereNull('deleted_at'))
+            ->count();
+
+        $totalViews = (int) TrainingSession::whereIn('id', $sessionIds)->sum('viewCount');
+
         $mostApplied = TrainingSession::withCount('trainingApplications as totalCount')
             ->whereIn('id', $sessionIds)
             ->orderByDesc('totalCount')
             ->limit(5)
             ->get();
 
+        $recentApplicants = TrainingApplication::whereIn('trainingSessionId', $sessionIds)
+            ->whereNull('deleted_at')
+            ->with(['user:id,name,email', 'trainingSession:id,title'])
+            ->latest()
+            ->limit(8)
+            ->get()
+            ->map(fn ($a) => [
+                'id'         => $a->id,
+                'status'     => $a->status,
+                'created_at' => $a->created_at,
+                'user'       => ['id' => $a->user?->id, 'name' => $a->user?->name, 'email' => $a->user?->email],
+                'session'    => ['id' => $a->trainingSession?->id, 'title' => $a->trainingSession?->title],
+            ]);
+
         return response()->json([
-            'school'              => $school,
-            'totalSessions'       => $totalSessions,
-            'totalApplications'   => $totalApplications,
-            'pendingApplications' => $pendingApplications,
-            'mostAppliedSessions' => $mostApplied,
+            'school'               => $school,
+            'totalSessions'        => $totalSessions,
+            'totalApplications'    => $totalApplications,
+            'pendingApplications'  => $pendingApplications,
+            'acceptedApplications' => $acceptedApplications,
+            'activeUsers'          => $activeUsers,
+            'totalViews'           => $totalViews,
+            'mostAppliedSessions'  => $mostApplied,
+            'recentApplicants'     => $recentApplicants,
         ]);
     }
 

@@ -24,6 +24,8 @@ class _TrainingListScreenState extends ConsumerState<TrainingListScreen> {
         return AppColors.gold;
       case TrainingType.presentiel:
         return AppColors.mint;
+      case TrainingType.longueDuree:
+        return const Color(0xFFA78BFA);
     }
   }
 
@@ -166,6 +168,16 @@ class _SessionTile extends StatelessWidget {
                     Text('${session.currentParticipants}/${session.maxParticipants}', style: const TextStyle(color: AppColors.muted, fontSize: 12)),
                   ],
                 ),
+                if (session.minEducationLevel != null && session.minEducationLevel!.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      const Icon(Icons.school_outlined, size: 13, color: AppColors.muted),
+                      const SizedBox(width: 4),
+                      Expanded(child: Text('Niveau min : ${session.minEducationLevel}', style: const TextStyle(color: AppColors.muted, fontSize: 12), overflow: TextOverflow.ellipsis)),
+                    ],
+                  ),
+                ],
                 if (cancelled || session.isFull) ...[
                   const SizedBox(height: 10),
                   Row(

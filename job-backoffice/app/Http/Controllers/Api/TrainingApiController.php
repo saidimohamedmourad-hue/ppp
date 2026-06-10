@@ -74,14 +74,20 @@ class TrainingApiController extends Controller
             && $session->currentParticipants >= $session->maxParticipants;
 
         $data = $request->validate([
-            'resume_id'    => 'required_without:resume_file|nullable|uuid|exists:resumes,id',
-            'resume_file'  => 'required_without:resume_id|nullable|file|mimes:pdf|max:2048',
+            // CV OPTIONNEL pour une inscription à une formation (contrairement
+            // à une candidature emploi où il reste obligatoire).
+            'resume_id'    => 'nullable|uuid|exists:resumes,id',
+            'resume_file'  => 'nullable|file|mimes:pdf|max:2048',
             'cover_letter' => 'nullable|string|max:5000',
+            // Niveau d'études (Algérie) : obligatoire, parmi la liste fermée.
+            'education_level' => ['required', 'string', \Illuminate\Validation\Rule::in(config('education.levels'))],
             'phone'        => $user->phone ? 'nullable|string|min:6|max:32|regex:/^[0-9+\-\s()]+$/'
                                            : 'required|string|min:6|max:32|regex:/^[0-9+\-\s()]+$/',
         ], [
             'phone.required' => 'Indiquez un numéro de téléphone — l\'école s\'en servira pour vous contacter.',
             'phone.regex'    => 'Le numéro de téléphone contient des caractères invalides.',
+            'education_level.required' => 'Sélectionnez votre niveau d\'études.',
+            'education_level.in'       => 'Niveau d\'études invalide.',
         ]);
 
         if (! empty($data['phone']) && $data['phone'] !== $user->phone) {
@@ -116,6 +122,7 @@ class TrainingApiController extends Controller
             'userId'             => $user->id,
             'resumeId'           => $resumeId,
             'cover_letter'       => $data['cover_letter'] ?? null,
+            'education_level'    => $data['education_level'],
             'status'             => 'pending',
             'is_waitlist'        => $isWaitlist,
             'aiGeneratedScore'   => 0,
@@ -129,6 +136,17 @@ class TrainingApiController extends Controller
 
         // Analyse IA en arrière-plan (queue)
         AnalyzeTrainingApplicationJob::dispatch($application->id);
+
+        // Notify the school-owner (bell + email) — best-effort, never blocks
+        // the enrollment if mail transport fails.
+        $schoolOwner = $session->school?->owner;
+        if ($schoolOwner) {
+            try {
+                $schoolOwner->notify(new \App\Notifications\TrainingApplicationReceived($application));
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
 
         return response()->json($application->load(['trainingSession.school', 'resume']), 201);
     }
@@ -194,10 +212,15 @@ class TrainingApiController extends Controller
             'endTime' => 'nullable|string',
             'maxParticipants' => 'required|integer|min:1',
             'status' => 'required|in:open,closed,cancelled',
-            'type' => 'required|in:en_ligne,accelerer,presentiel',
+            'type' => 'required|in:en_ligne,accelerer,presentiel,longue_duree',
             'cancellation_reason' => 'nullable|required_if:status,cancelled|string|max:1000',
             'salary' => 'nullable|numeric|min:0',
             'trainingCategoryId' => 'required|uuid|exists:training_categories,id',
+            // Niveau d'études minimum requis pour la formation (obligatoire).
+            'min_education_level' => ['required', 'string', \Illuminate\Validation\Rule::in(config('education.levels'))],
+        ], [
+            'min_education_level.required' => 'Sélectionnez le niveau d\'études minimum requis.',
+            'min_education_level.in'       => 'Niveau d\'études minimum invalide.',
         ]);
 
         $session = TrainingSession::create(array_merge($data, [
@@ -224,10 +247,14 @@ class TrainingApiController extends Controller
             'endTime' => 'nullable|string',
             'maxParticipants' => 'sometimes|integer|min:1',
             'status' => 'sometimes|in:open,closed,cancelled',
-            'type' => 'sometimes|in:en_ligne,accelerer,presentiel',
+            'type' => 'sometimes|in:en_ligne,accelerer,presentiel,longue_duree',
             'cancellation_reason' => 'nullable|required_if:status,cancelled|string|max:1000',
             'salary' => 'nullable|numeric|min:0',
             'trainingCategoryId' => 'sometimes|uuid|exists:training_categories,id',
+            'min_education_level' => ['sometimes', 'required', 'string', \Illuminate\Validation\Rule::in(config('education.levels'))],
+        ], [
+            'min_education_level.required' => 'Sélectionnez le niveau d\'études minimum requis.',
+            'min_education_level.in'       => 'Niveau d\'études minimum invalide.',
         ]);
 
         $session->update($data);
@@ -272,6 +299,7 @@ class TrainingApiController extends Controller
         ]);
 
         $newStatus = $data['status'];
+        $previousStatus = $application->status;
         $wasWaitlist = $application->is_waitlist;
 
         // Accepting a waitlist app: count it now (may overfill maxParticipants)
@@ -283,6 +311,21 @@ class TrainingApiController extends Controller
         $application->status = $newStatus;
         $application->save();
 
-        return response()->json($application->load(['user', 'resume', 'trainingSession']));
+        // Notify candidate when status really changed (best-effort).
+        if ($previousStatus !== $newStatus && $application->user) {
+            try {
+                $application->user->notify(new \App\Notifications\TrainingApplicationStatusChanged($application->fresh()));
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+
+        // Lean payload — see JobApiController::updateApplicationStatus for the
+        // rationale (strict JSON encoder + possibly dirty text columns).
+        return response()->json([
+            'id'          => $application->id,
+            'status'      => $application->status,
+            'is_waitlist' => (bool) $application->is_waitlist,
+        ]);
     }
 }

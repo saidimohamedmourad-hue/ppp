@@ -7,11 +7,13 @@ const TYPE_LABELS: Record<TrainingType, string> = {
   presentiel: 'Présentiel',
   en_ligne: 'En ligne',
   accelerer: 'Accéléré',
+  longue_duree: 'Longue durée',
 }
 const TYPE_COLORS: Record<TrainingType, string> = {
   presentiel: '#4fffb0',
   en_ligne: '#60a5fa',
   accelerer: '#f0c45a',
+  longue_duree: '#a78bfa',
 }
 
 function Spin() {
@@ -113,7 +115,12 @@ export default function Trainings() {
                   <span style={{ fontSize: 11, color: typeColor, background: `${typeColor}1a`, padding: '3px 10px', borderRadius: 100, fontWeight: 600 }}>{TYPE_LABELS[tt]}</span>
                 </div>
                 <div style={{ fontFamily: '"Syne", sans-serif', fontWeight: 700, fontSize: 15, color: 'white', marginBottom: 5 }}>{t.title}</div>
-                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 14 }}>{t.school?.name}</div>
+                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 8 }}>{t.school?.name}</div>
+                {t.min_education_level && (
+                  <div style={{ fontSize: 11.5, color: '#60a5fa', background: 'rgba(96,165,250,0.12)', padding: '3px 10px', borderRadius: 100, fontWeight: 600, display: 'inline-block', marginBottom: 14 }}>
+                    🎓 Niveau min : {t.min_education_level}
+                  </div>
+                )}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                   {t.price != null && (
                     <span style={{ fontSize: 12, color: '#4fffb0', fontWeight: 600 }}>

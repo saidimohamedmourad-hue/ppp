@@ -40,6 +40,8 @@ class SocialAuthController extends Controller
         $data = $request->validate([
             'id_token'     => 'required_without:access_token|string',
             'access_token' => 'required_without:id_token|string',
+            // Rôle souhaité à l'inscription (appliqué seulement si nouveau compte).
+            'role'         => 'nullable|in:job-seeker,company-owner,school-owner',
         ]);
 
         if (! empty($data['id_token'])) {
@@ -67,6 +69,7 @@ class SocialAuthController extends Controller
                 'email_verified' => $payload['email_verified'] ?? null,
                 'locale'         => $payload['locale'] ?? null,
             ],
+            role: $data['role'] ?? 'job-seeker',
         );
 
         $user->update(['last_login_at' => now()]);
@@ -162,6 +165,7 @@ class SocialAuthController extends Controller
     {
         $data = $request->validate([
             'access_token' => 'required|string',
+            'role'         => 'nullable|in:job-seeker,company-owner,school-owner',
         ]);
 
         $payload = $this->verifyFacebookToken($data['access_token']);
@@ -182,6 +186,7 @@ class SocialAuthController extends Controller
                 'verified'  => $payload['verified'] ?? null,
                 'locale'    => $payload['locale']   ?? null,
             ],
+            role: $data['role'] ?? 'job-seeker',
         );
 
         $user->update(['last_login_at' => now()]);

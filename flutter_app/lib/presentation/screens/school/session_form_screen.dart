@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/training_provider.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/education_levels.dart';
 import '../../../data/models/training/training_model.dart';
 import '../../../data/repositories/training_repository.dart';
 
@@ -23,6 +24,7 @@ class _SessionFormScreenState extends ConsumerState<SessionFormScreen> {
   final _cancellationReason = TextEditingController();
   String _status = 'open';
   TrainingType _type = TrainingType.presentiel;
+  String? _minEducationLevel;
   String? _trainingCategoryId;
   DateTime? _startDate;
   bool _loading = false;
@@ -47,6 +49,7 @@ class _SessionFormScreenState extends ConsumerState<SessionFormScreen> {
           _maxParticipants.text = session.maxParticipants.toString();
           _status = session.status;
           _type = session.type;
+          _minEducationLevel = session.minEducationLevel;
           _cancellationReason.text = session.cancellationReason ?? '';
           _startDate = session.trainingDate;
           _trainingCategoryId = session.trainingCategory?.id;
@@ -92,6 +95,7 @@ class _SessionFormScreenState extends ConsumerState<SessionFormScreen> {
         'trainingDate': _startDate!.toIso8601String().substring(0, 10),
         'status': _status,
         'type': _type.value,
+        'min_education_level': _minEducationLevel,
         if (_status == 'cancelled') 'cancellation_reason': _cancellationReason.text.trim(),
         'trainingCategoryId': _trainingCategoryId,
       };
@@ -166,6 +170,20 @@ class _SessionFormScreenState extends ConsumerState<SessionFormScreen> {
                     .map((t) => DropdownMenuItem(value: t, child: Text(t.label)))
                     .toList(),
                 onChanged: (v) => setState(() => _type = v!),
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                initialValue: _minEducationLevel,
+                isExpanded: true,
+                decoration: const InputDecoration(
+                  labelText: 'Niveau d\'études minimum requis *',
+                  prefixIcon: Icon(Icons.school_outlined),
+                ),
+                items: kEducationLevels
+                    .map((lvl) => DropdownMenuItem(value: lvl, child: Text(lvl)))
+                    .toList(),
+                onChanged: (v) => setState(() => _minEducationLevel = v),
+                validator: (v) => (v == null || v.isEmpty) ? 'Sélectionnez un niveau' : null,
               ),
               const SizedBox(height: 16),
               if (_status == 'cancelled') ...[
