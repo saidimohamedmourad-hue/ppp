@@ -22,13 +22,17 @@ connexions Google/Facebook. *(Détail complet dans `ARCHITECTURE.md`.)*
 
 ## Ce qui est déjà opérationnel (MVP fonctionnel)
 - **Comptes & connexion** : 4 rôles (candidat, entreprise, école, admin),
-  connexion email + **Google + Facebook**, réinitialisation de mot de passe.
-- **Emploi** : publication d'offres, candidature avec CV, coordonnées du
-  recruteur (téléphone, site, adresse).
-- **Formation** : sessions avec type, lieu, dates, prix, **places + liste
-  d'attente**, motif d'annulation.
+  connexion **et inscription** email + **Google + Facebook** (tous les profils),
+  réinitialisation de mot de passe.
+- **Emploi** : publication d'offres, candidature avec **CV (obligatoire)** +
+  **niveau d'études**, coordonnées du recruteur (téléphone, site, adresse).
+- **Formation** : sessions avec type (dont **longue durée**), lieu, dates, prix,
+  **places + liste d'attente**, motif d'annulation, **niveau minimum requis** ;
+  inscription avec niveau d'études (**CV optionnel**).
 - **IA** : score + retour sur chaque candidature ; l'humain décide (accepter /
   en attente / refuser).
+- **Tableaux de bord entreprise/école** (web + mobile) : vues, **taux de
+  conversion**, candidats actifs, top offres/formations, candidatures récentes.
 - **Notifications** web + email ; **back-office admin** complet avec archivage.
 
 ## Sécurité & conformité

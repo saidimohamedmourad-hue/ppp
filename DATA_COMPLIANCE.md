@@ -28,7 +28,7 @@ candidates, companies and schools.
 |---|---|---|
 | Identity | first name, last name | sign-up |
 | Contact | email, **phone**, address | sign-up / 1st application |
-| Professional | CV, qualifications, experience, skills | candidate profile |
+| Professional | CV, qualifications, experience, skills, **education level** | candidate profile / application |
 | Applications | targeted offers/sessions, status, history | usage |
 | Assessment | **AI score + AI feedback** on the application | automated processing |
 | Account | password (hashed), roles, login logs | security |

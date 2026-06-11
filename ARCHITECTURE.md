@@ -107,9 +107,9 @@ aux données d'un autre profil.
 | **Company** | Fiche entreprise (secteur, adresse, site, téléphone) | appartient à un User, publie des offres |
 | **School** | Fiche école / centre (secteur, adresse, site, téléphone) | appartient à un User, publie des sessions |
 | **JobVacancy** | Offre d'emploi (titre, type, lieu, salaire, description) | entreprise, catégorie, candidatures |
-| **TrainingSession** | Session de formation (type, lieu, dates, prix, places, liste d'attente) | école, catégorie, inscriptions |
-| **JobApplication** | Candidature à une offre (statut, **score IA + retour IA**) | user, offre, CV |
-| **TrainingApplication** | Inscription à une session (statut, **score IA + retour IA**) | user, session |
+| **TrainingSession** | Session de formation (type — dont **longue durée**, lieu, dates, prix, places, liste d'attente, **niveau d'études min. requis**) | école, catégorie, inscriptions |
+| **JobApplication** | Candidature à une offre (statut, **score IA + retour IA**, **niveau d'études**) | user, offre, CV |
+| **TrainingApplication** | Inscription à une session (statut, **score IA + retour IA**, **niveau d'études**) | user, session |
 | **Resume** | CV du candidat (résumé, compétences, formation, expérience) | user |
 | **JobCategory / TrainingCategory** | Catégories pour classer offres et sessions | — |
 | **AuthProvider** | Lien vers un compte Google / Facebook | user |

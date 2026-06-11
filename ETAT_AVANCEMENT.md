@@ -51,7 +51,9 @@ cohérence des données et réduit les coûts de maintenance.
 - Inscription et connexion sécurisées, avec **4 rôles** (candidat, entreprise,
   école, administrateur) et un aiguillage automatique vers le bon espace.
 - **Réinitialisation de mot de passe par email** (lien sécurisé).
-- **Connexion via Google et Facebook** (« Continuer avec Google / Facebook »).
+- **Connexion / inscription via Google et Facebook** (« Continuer avec Google /
+  Facebook ») — disponible pour **tous les profils** (candidat, entreprise,
+  école).
 - **Gestion des méthodes de connexion** depuis le profil (lier / délier Google,
   Facebook, définir un mot de passe).
 
@@ -59,17 +61,32 @@ cohérence des données et réduit les coûts de maintenance.
 - **Offres d'emploi** : publication, consultation détaillée (salaire, lieu,
   type, description, **coordonnées du recruteur** : téléphone, site web,
   adresse), candidature avec CV.
-- **Formations** : sessions avec **type**, **lieu**, **dates**, **prix /
-  gratuité**, **places disponibles** et **liste d'attente** automatique,
-  **motif d'annulation** le cas échéant.
+- **Formations** : sessions avec **type** (présentiel, en ligne, accéléré,
+  **longue durée**), **lieu**, **dates**, **prix / gratuité**, **places
+  disponibles** et **liste d'attente** automatique, **motif d'annulation**, et
+  **niveau d'études minimum requis**.
+- **Niveau d'études obligatoire** à la candidature / l'inscription (liste
+  adaptée à l'Algérie) — transmis au recruteur / à l'école.
+- **CV** : **obligatoire** pour postuler à un emploi, **optionnel** pour
+  s'inscrire à une formation.
 - **Téléphone obligatoire** à la première candidature : entreprises et écoles
   reçoivent ainsi un moyen de contact direct.
+- **Consultation sans quitter la liste** : un clic sur le titre ouvre les
+  détails dans une fenêtre (et compte la vue).
 
 ### Intelligence artificielle
 - Chaque candidature reçoit un **score IA (0–100)** et un **retour IA**
   (analyse du CV vs. l'offre).
 - L'entreprise / l'école garde **toujours la décision finale** : elle peut
   accepter, mettre en attente ou refuser, **quel que soit le score**.
+
+### Tableaux de bord & statistiques (entreprise / école)
+- **Statistiques en temps réel** : nombre d'offres/formations, **vues
+  cumulées**, candidatures (en attente / acceptées), **candidats actifs (30
+  jours)**.
+- **Top offres / formations** avec **taux de conversion** (vues → candidatures).
+- **Candidatures récentes** d'un coup d'œil.
+- Disponible sur le **web (React)** et l'**application Flutter**.
 
 ### Notifications
 - **Notifications en temps réel** (cloche dans l'interface) **et par email**
@@ -108,6 +125,10 @@ cohérence des données et réduit les coûts de maintenance.
 | Réinitialisation de mot de passe | ✅ Opérationnel |
 | Offres d'emploi (publication, candidature, IA) | ✅ Opérationnel |
 | Formations (sessions, liste d'attente, inscription, IA) | ✅ Opérationnel |
+| Niveau d'études (candidature) + CV conditionnel + niveau min. requis | ✅ Opérationnel |
+| Type formation « Longue durée » | ✅ Opérationnel |
+| Tableaux de bord & statistiques (web + Flutter) | ✅ Opérationnel |
+| Inscription sociale entreprise / école (Google, Facebook) | ✅ Opérationnel |
 | Notifications (web + email) | ✅ Opérationnel |
 | Back-office administrateur complet | ✅ Opérationnel |
 | Coordonnées (téléphone) & contact recruteur | ✅ Opérationnel |
@@ -126,8 +147,9 @@ par l'IA et décide ; un administrateur supervise le tout.
 
 | Sujet | Statut |
 |---|---|
-| Connexion Google sur **Flutter Web** | 🔧 Correctif appliqué, **test final en cours** |
+| Connexion Google sur **Flutter Web** | 🔧 Code corrigé + lancement fiabilisé ; reste l'autorisation des origines dans Google Cloud + test final |
 | Captcha anti-bot dans l'app **Flutter** | ⏳ Présent sur le web React, **à ajouter** côté Flutter |
+| Inscription sociale entreprise/école sur **Flutter** | ⏳ Fait sur le web ; à ajouter sur le register Flutter |
 | Chaîne d'intégration continue (CI/CD) | ⏸️ En pause (déblocage administratif d'un compte) |
 | Mise en production / déploiement | ⏳ À planifier |
 | Affinage du moteur de score IA | ⏳ Amélioration continue prévue |

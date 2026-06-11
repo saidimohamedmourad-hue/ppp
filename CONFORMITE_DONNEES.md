@@ -29,7 +29,7 @@ confiance** vis-à-vis des candidats, des entreprises et des écoles.
 |---|---|---|
 | Identité | nom, prénom | inscription |
 | Contact | email, **téléphone**, adresse | inscription / 1ʳᵉ candidature |
-| Professionnelles | CV, diplômes, expériences, compétences | profil candidat |
+| Professionnelles | CV, diplômes, expériences, compétences, **niveau d'études** | profil candidat / candidature |
 | Candidatures | offres/sessions visées, statut, historique | usage |
 | Évaluation | **score IA + retour IA** sur la candidature | traitement automatisé |
 | Compte | mot de passe (haché), rôles, journaux de connexion | sécurité |

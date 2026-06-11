@@ -50,18 +50,31 @@ reducing maintenance costs.
 - Secure sign-up and login, with **4 roles** (candidate, company, school,
   administrator) and automatic routing to the right area.
 - **Password reset by email** (secure link).
-- **Login via Google and Facebook** ("Continue with Google / Facebook").
+- **Login & sign-up via Google and Facebook** — available for **all profiles**
+  (candidate, company, school).
 - **Login-method management** from the profile (link / unlink Google, Facebook,
   set a password).
 
 ### Jobs & training
 - **Job offers**: posting, detailed view (salary, location, type, description,
-  **recruiter contact details**: phone, website, address), application with CV.
-- **Trainings**: sessions with **type**, **location**, **dates**, **price /
-  free**, **available seats** and automatic **waitlist**, **cancellation
-  reason** when applicable.
+  **recruiter contact details**: phone, website, address), application with
+  **CV (required)** + **education level**.
+- **Trainings**: sessions with **type** (in-person, online, accelerated,
+  **long-duration**), **location**, **dates**, **price / free**, **available
+  seats** + automatic **waitlist**, **cancellation reason**, and a **minimum
+  required education level**.
+- **Education level required** on every application / enrollment (Algeria-specific
+  list); **CV required for jobs, optional for trainings**.
 - **Phone number required** on first application: companies and schools thus
   get a direct way to contact the candidate.
+- **View details without leaving the list**: clicking a title opens the details
+  in a modal (and counts the view).
+
+### Dashboards & analytics (company / school)
+- **Real-time stats**: offers/trainings, **cumulative views**, applications
+  (pending / accepted), **active candidates (30 days)**.
+- **Top offers / trainings** with **conversion rate** (views → applications) and
+  **recent applications** — on **web (React)** and the **Flutter app**.
 
 ### Artificial intelligence
 - Every application receives an **AI score (0–100)** and an **AI feedback**
@@ -104,6 +117,10 @@ reducing maintenance costs.
 | Password reset | ✅ Operational |
 | Job offers (posting, application, AI) | ✅ Operational |
 | Trainings (sessions, waitlist, enrollment, AI) | ✅ Operational |
+| Education level (application) + conditional CV + min. required level | ✅ Operational |
+| Training "Long-duration" type | ✅ Operational |
+| Dashboards & analytics (web + Flutter) | ✅ Operational |
+| Social sign-up for company / school (Google, Facebook) | ✅ Operational |
 | Notifications (web + email) | ✅ Operational |
 | Full administrator back-office | ✅ Operational |
 | Contact details (phone) & recruiter contact | ✅ Operational |
@@ -122,8 +139,9 @@ administrator oversees everything.
 
 | Topic | Status |
 |---|---|
-| Google login on **Flutter Web** | 🔧 Fix applied, **final test in progress** |
+| Google login on **Flutter Web** | 🔧 Code fixed + launch stabilized; remaining: authorize origins in Google Cloud + final test |
 | Anti-bot captcha in the **Flutter** app | ⏳ Present on the React web, **to be added** on Flutter |
+| Social sign-up for company/school on **Flutter** | ⏳ Done on web; to be added on the Flutter register screen |
 | Continuous integration / deployment (CI/CD) | ⏸️ Paused (administrative unblocking of an account) |
 | Production deployment | ⏳ To be planned |
 | AI scoring engine refinement | ⏳ Continuous improvement planned |
