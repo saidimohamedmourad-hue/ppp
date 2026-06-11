@@ -48,38 +48,64 @@ class _SchoolDashBody extends ConsumerWidget {
     final dashAsync = ref.watch(_schoolDashProvider);
 
     return dashAsync.when(
-      data: (data) => SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            GridView.count(
-              crossAxisCount: 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
-              crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 1.5,
-              children: [
-                _Stat(label: 'Formations', value: '${data['totalSessions'] ?? 0}', icon: Icons.school, color: AppColors.secondary),
-                _Stat(label: 'Inscriptions', value: '${data['totalApplications'] ?? 0}', icon: Icons.people, color: AppColors.primary),
-                _Stat(label: 'En attente', value: '${data['pendingApplications'] ?? 0}', icon: Icons.pending, color: AppColors.warning),
-                _Stat(label: 'Taux remplissage', value: '-', icon: Icons.bar_chart, color: AppColors.success),
-              ],
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.add),
-                label: const Text('Créer une formation'),
-                style: ElevatedButton.styleFrom(backgroundColor: AppColors.secondary),
-                onPressed: () => context.push('/school/sessions/new'),
+      data: (data) {
+        final top = (data['mostAppliedSessions'] as List?) ?? const [];
+        final recent = (data['recentApplicants'] as List?) ?? const [];
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GridView.count(
+                crossAxisCount: 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
+                crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 1.5,
+                children: [
+                  _Stat(label: 'Formations', value: '${data['totalSessions'] ?? 0}', icon: Icons.school, color: AppColors.secondary),
+                  _Stat(label: 'Vues', value: '${data['totalViews'] ?? 0}', icon: Icons.visibility_outlined, color: AppColors.blue),
+                  _Stat(label: 'Inscriptions', value: '${data['totalApplications'] ?? 0}', icon: Icons.people, color: AppColors.primary),
+                  _Stat(label: 'En attente', value: '${data['pendingApplications'] ?? 0}', icon: Icons.pending, color: AppColors.warning),
+                  _Stat(label: 'Acceptés', value: '${data['acceptedApplications'] ?? 0}', icon: Icons.check_circle_outline, color: AppColors.success),
+                  _Stat(label: 'Actifs (30 j)', value: '${data['activeUsers'] ?? 0}', icon: Icons.local_fire_department_outlined, color: AppColors.primary),
+                ],
               ),
-            ),
-            const SizedBox(height: 10),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(icon: const Icon(Icons.list), label: const Text('Gérer les formations'), onPressed: () => context.push('/school/sessions')),
-            ),
-          ],
-        ),
-      ),
+              const SizedBox(height: 20),
+              if (top.isNotEmpty) ...[
+                const _SectionTitle('Top formations — vues & conversion'),
+                ...top.map((s) => _TopRow(
+                      title: '${(s as Map)['title'] ?? ''}',
+                      views: (s['viewCount'] as num?)?.toInt() ?? 0,
+                      count: (s['totalCount'] as num?)?.toInt() ?? 0,
+                      countLabel: 'inscrits',
+                    )),
+                const SizedBox(height: 20),
+              ],
+              if (recent.isNotEmpty) ...[
+                const _SectionTitle('Inscriptions récentes'),
+                ...recent.map((a) => _RecentRow(
+                      name: '${((a as Map)['user'] as Map?)?['name'] ?? '—'}',
+                      subtitle: '${(a['session'] as Map?)?['title'] ?? ''}',
+                      status: '${a['status'] ?? ''}',
+                    )),
+                const SizedBox(height: 20),
+              ],
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.add),
+                  label: const Text('Créer une formation'),
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.secondary),
+                  onPressed: () => context.push('/school/sessions/new'),
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(icon: const Icon(Icons.list), label: const Text('Gérer les formations'), onPressed: () => context.push('/school/sessions')),
+              ),
+            ],
+          ),
+        );
+      },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(
         child: Padding(
@@ -162,6 +188,90 @@ class _PendingScreenState extends State<_PendingScreen> {
           ),
         ],
       ),
+    ),
+  );
+}
+
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle(this.text);
+  final String text;
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Text(text, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+  );
+}
+
+class _TopRow extends StatelessWidget {
+  const _TopRow({required this.title, required this.views, required this.count, required this.countLabel});
+  final String title;
+  final int views, count;
+  final String countLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final conv = views > 0 ? '${((count / views) * 100).round()}%' : '—';
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        children: [
+          Expanded(child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w500))),
+          const SizedBox(width: 8),
+          Text('$views vues', style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+          const SizedBox(width: 12),
+          Text('$count $countLabel', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+          const SizedBox(width: 12),
+          Text(conv, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.primary)),
+        ],
+      ),
+    );
+  }
+}
+
+class _RecentRow extends StatelessWidget {
+  const _RecentRow({required this.name, required this.subtitle, required this.status});
+  final String name, subtitle, status;
+
+  Color get _statusColor => switch (status) {
+        'accepted' => AppColors.success,
+        'rejected' => AppColors.error,
+        _ => AppColors.warning,
+      };
+
+  @override
+  Widget build(BuildContext context) => Container(
+    margin: const EdgeInsets.only(bottom: 8),
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: AppColors.border),
+    ),
+    child: Row(
+      children: [
+        CircleAvatar(radius: 16, backgroundColor: AppColors.surface2, child: Text(name.isNotEmpty ? name[0].toUpperCase() : '?', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold))),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13.5)),
+              if (subtitle.isNotEmpty) Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+            ],
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(color: _statusColor.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(100)),
+          child: Text(status, style: TextStyle(fontSize: 11, color: _statusColor, fontWeight: FontWeight.w600)),
+        ),
+      ],
     ),
   );
 }

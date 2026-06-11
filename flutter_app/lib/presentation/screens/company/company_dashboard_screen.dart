@@ -48,16 +48,40 @@ class _DashboardBody extends ConsumerWidget {
     final dashAsync = ref.watch(_dashboardProvider);
 
     return dashAsync.when(
-      data: (data) => SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            _StatsGrid(data: data),
-            const SizedBox(height: 24),
-            _ActionSection(),
-          ],
-        ),
-      ),
+      data: (data) {
+        final top = (data['mostAppliedJobs'] as List?) ?? const [];
+        final recent = (data['recentApplicants'] as List?) ?? const [];
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _StatsGrid(data: data),
+              const SizedBox(height: 20),
+              if (top.isNotEmpty) ...[
+                const _SectionTitle('Top offres — vues & conversion'),
+                ...top.map((j) => _TopRow(
+                      title: '${(j as Map)['title'] ?? ''}',
+                      views: (j['viewCount'] as num?)?.toInt() ?? 0,
+                      count: (j['totalCount'] as num?)?.toInt() ?? 0,
+                      countLabel: 'candidat.',
+                    )),
+                const SizedBox(height: 20),
+              ],
+              if (recent.isNotEmpty) ...[
+                const _SectionTitle('Candidatures récentes'),
+                ...recent.map((a) => _RecentRow(
+                      name: '${((a as Map)['user'] as Map?)?['name'] ?? '—'}',
+                      subtitle: '${(a['job'] as Map?)?['title'] ?? ''}',
+                      status: '${a['status'] ?? ''}',
+                    )),
+                const SizedBox(height: 20),
+              ],
+              _ActionSection(),
+            ],
+          ),
+        );
+      },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(
         child: Padding(
@@ -158,10 +182,96 @@ class _StatsGrid extends StatelessWidget {
     childAspectRatio: 1.5,
     children: [
       _StatCard(label: 'Offres publiées', value: '${data['totalJobs'] ?? 0}', icon: Icons.work, color: AppColors.primary),
+      _StatCard(label: 'Vues totales', value: '${data['totalViews'] ?? 0}', icon: Icons.visibility, color: AppColors.blue),
       _StatCard(label: 'Candidatures', value: '${data['totalApplications'] ?? 0}', icon: Icons.people, color: AppColors.secondary),
       _StatCard(label: 'En attente', value: '${data['pendingApplications'] ?? 0}', icon: Icons.pending, color: AppColors.warning),
-      _StatCard(label: 'Vues totales', value: '-', icon: Icons.visibility, color: AppColors.success),
+      _StatCard(label: 'Acceptés', value: '${data['acceptedApplications'] ?? 0}', icon: Icons.check_circle_outline, color: AppColors.success),
+      _StatCard(label: 'Actifs (30 j)', value: '${data['activeUsers'] ?? 0}', icon: Icons.local_fire_department_outlined, color: AppColors.primary),
     ],
+  );
+}
+
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle(this.text);
+  final String text;
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Text(text, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+  );
+}
+
+class _TopRow extends StatelessWidget {
+  const _TopRow({required this.title, required this.views, required this.count, required this.countLabel});
+  final String title;
+  final int views, count;
+  final String countLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final conv = views > 0 ? '${((count / views) * 100).round()}%' : '—';
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        children: [
+          Expanded(child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w500))),
+          const SizedBox(width: 8),
+          Text('$views vues', style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+          const SizedBox(width: 12),
+          Text('$count $countLabel', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+          const SizedBox(width: 12),
+          Text(conv, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.primary)),
+        ],
+      ),
+    );
+  }
+}
+
+class _RecentRow extends StatelessWidget {
+  const _RecentRow({required this.name, required this.subtitle, required this.status});
+  final String name, subtitle, status;
+
+  Color get _statusColor => switch (status) {
+        'accepted' => AppColors.success,
+        'rejected' => AppColors.error,
+        _ => AppColors.warning,
+      };
+
+  @override
+  Widget build(BuildContext context) => Container(
+    margin: const EdgeInsets.only(bottom: 8),
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: AppColors.border),
+    ),
+    child: Row(
+      children: [
+        CircleAvatar(radius: 16, backgroundColor: AppColors.surface2, child: Text(name.isNotEmpty ? name[0].toUpperCase() : '?', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold))),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13.5)),
+              if (subtitle.isNotEmpty) Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+            ],
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(color: _statusColor.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(100)),
+          child: Text(status, style: TextStyle(fontSize: 11, color: _statusColor, fontWeight: FontWeight.w600)),
+        ),
+      ],
+    ),
   );
 }
 

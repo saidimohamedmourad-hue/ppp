@@ -61,8 +61,25 @@ export default function CompanyDashboard() {
     )
   }
 
-  const topJobs = data?.mostAppliedJobs ?? []
-  const recent = data?.recentApplicants ?? []
+  // Owner sans entreprise associée (ex. inscription Google/Facebook en
+  // « Entreprise ») → l'API renvoie 404 et data reste null. On affiche un état
+  // d'attente plutôt qu'un tableau de bord à zéro.
+  if (!data) {
+    return (
+      <div className="d-card" style={{ textAlign: 'center', padding: '48px 24px', maxWidth: 520, margin: '40px auto' }}>
+        <div style={{ fontSize: 44, marginBottom: 14 }}>🏢</div>
+        <h2 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 22, color: 'var(--d-text)', marginBottom: 10 }}>Espace entreprise en préparation</h2>
+        <p style={{ color: 'var(--d-muted)', fontSize: 13.5, lineHeight: 1.6, marginBottom: 22 }}>
+          Votre compte est bien créé avec le rôle <strong>Entreprise</strong>. Un administrateur doit
+          encore créer et associer votre fiche entreprise. Une fois lié, rafraîchissez cette page.
+        </p>
+        <button onClick={() => window.location.reload()} className="d-btn-gold" style={{ border: 'none', cursor: 'pointer' }}>Rafraîchir</button>
+      </div>
+    )
+  }
+
+  const topJobs = data.mostAppliedJobs ?? []
+  const recent = data.recentApplicants ?? []
 
   const statCards = [
     { icon: '💼', bg: 'rgba(79,255,176,0.1)',  val: data?.totalJobs ?? 0,            lbl: 'Offres publiées' },
