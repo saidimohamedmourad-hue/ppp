@@ -4,6 +4,36 @@ Plateforme algérienne de mise en relation **candidats / entreprises / écoles**
 
 ---
 
+## 📚 Documentation
+
+### Dossier business plan (synthèse)
+| Doc | Contenu |
+|-----|---------|
+| [`RESUME_1PAGE.md`](./RESUME_1PAGE.md) | Résumé exécutif (1 page) |
+| [`ETAT_AVANCEMENT.md`](./ETAT_AVANCEMENT.md) | État d'avancement détaillé |
+| [`ARCHITECTURE.md`](./ARCHITECTURE.md) | Architecture (schéma, composants, rôles, flux) |
+| [`CONFORMITE_DONNEES.md`](./CONFORMITE_DONNEES.md) | Conformité loi 18-07 / RGPD-DZ |
+| [`IQRA_Dossier_BusinessPlan.docx`](./IQRA_Dossier_BusinessPlan.docx) | Dossier Word fusionné |
+| *EN :* [`PROJECT_STATUS.md`](./PROJECT_STATUS.md) · [`DATA_COMPLIANCE.md`](./DATA_COMPLIANCE.md) | Versions anglaises (statut + conformité) |
+
+### Plans de conception (technique / roadmap)
+| Doc | Contenu |
+|-----|---------|
+| [`PLAN_AUTH_SOCIAL.md`](./PLAN_AUTH_SOCIAL.md) | Auth e-mail + Google/Facebook, comptes liés, hardening |
+| [`PLAN_DASHBOARD_JOBS_TRAINING.md`](./PLAN_DASHBOARD_JOBS_TRAINING.md) | Tableaux de bord offres / formations |
+| [`PLAN_TECHNIQUE_FLUTTER.md`](./PLAN_TECHNIQUE_FLUTTER.md) | Architecture de l'app Flutter |
+
+### Exploitation
+| Doc | Contenu |
+|-----|---------|
+| [`PRODUCTION_CHECKLIST.md`](./PRODUCTION_CHECKLIST.md) | Checklist de mise en production |
+| [`SETUP_CREDENTIALS.md`](./SETUP_CREDENTIALS.md) | Configurer Gmail / Google / Meta |
+
+> Les fichiers `PLAN_*` sont des **notes de conception** ; l'**état réel à jour**
+> est dans [`ETAT_AVANCEMENT.md`](./ETAT_AVANCEMENT.md).
+
+---
+
 ## 🗂️ Structure du monorepo
 
 ```
@@ -11,8 +41,7 @@ appppp/
 ├── ppp/                        # Backend + frontend web (Laravel + React)
 │   ├── job-backoffice/         # API Laravel + admin Blade (port 8000)
 │   ├── job-app-frontend/       # SPA React/Vite (port 3000)
-│   ├── job-shared/             # Models Eloquent partagés (composer path repo)
-│   └── job-app/                # Ancien backend Laravel (mode legacy, peut être retiré)
+│   └── job-shared/             # Models Eloquent partagés (composer path repo)
 │
 ├── flutter_app/                # App mobile + web Flutter (port 8090 en web)
 │
@@ -60,13 +89,21 @@ Disponible sur `http://localhost:3000`.
 
 > ⚠️ Toujours `--strictPort` : sinon Vite peut basculer sur 3001 si 3000 est occupé par un zombie, ce qui casse les CORS Google OAuth.
 
-### 3. Flutter — Chrome web sur port 8090
+### 3. Flutter — web sur port 8090 (fiable)
 
 ```bash
 cd flutter_app
 flutter pub get
-flutter run -d chrome --web-port=8090 --web-hostname=localhost
+run_web.bat          # libère 8090, lance le serveur web, ouvre le navigateur
 ```
+
+`run_web.bat` (ou `run_web.ps1`) utilise le device **`web-server`** sur le port
+fixe **8090** et **libère d'abord le port** si un `flutter run` précédent y est
+resté bloqué — c'est la cause classique des erreurs « port déjà utilisé » sur
+8090. Arrêt propre : **Ctrl+C** dans la fenêtre, ou `stop_web.bat`.
+
+> Le port **fixe 8090** est requis pour Google Sign-In (origine enregistrée dans
+> Google Cloud) ; un port aléatoire casserait l'auth Google.
 
 Pour Android : `flutter run -d <device-id>`. Pour iOS : `flutter run -d <ipad/iphone>`.
 
@@ -84,6 +121,11 @@ Pour Android : `flutter run -d <device-id>`. Pour iOS : `flutter run -d <ipad/ip
 | **4** Phone OTP Firebase | 🔄 Backlog |
 | **5** UI "Comptes liés" sur profil | ✅ Production |
 | **6** Tests + Hardening (rate-limit, audit, Turnstile) | ✅ Production |
+
+> **Juin 2026** : inscription **Google/Facebook pour tous les profils**
+> (candidat / entreprise / école) sur **web + Flutter** ; **vitrine publique**
+> d'offres/formations sur l'accueil (clic → connexion) ; **run Flutter Web
+> fiabilisé** sur le port 8090 (`run_web.bat`).
 
 ---
 
@@ -133,6 +175,9 @@ Ajouté en bonus de la phase 6 :
 | 2026-05-28 | `extend_users_for_social_auth` | `auth_providers` + `password` nullable |
 | 2026-05-28 | `create_login_audits` | Table de tracking forensique |
 | 2026-05-30 | `add_phone_to_users_companies_schools` | Colonne `phone` sur 3 tables |
+| 2026-06-09 | `add_education_level_to_applications` | Niveau d'études sur candidatures emploi + formation |
+| 2026-06-09 | `add_min_education_level_to_training_sessions` | Niveau d'études min. requis sur les sessions |
+| 2026-06-09 | `add_longue_duree_to_training_type_enum` | Type formation **longue durée** (garde-fou driver MySQL/MariaDB) |
 
 ---
 
@@ -161,7 +206,7 @@ Ajouté en bonus de la phase 6 :
 | Couche | Tech | Why |
 |--------|------|-----|
 | Backend API + Admin | Laravel 12 + Sanctum + Pest | Mature, RBAC simple, factories solides |
-| Models partagés | Composer path repository (`job-shared`) | Évite la duplication entre `job-app` legacy et `job-backoffice` |
+| Models partagés | Composer path repository (`job-shared`) | Modèles Eloquent définis une seule fois, réutilisés par `job-backoffice` |
 | Frontend candidat | React 18 + Vite 6 + TypeScript | DX rapide, HMR instantané |
 | Frontend admin | Blade + Tailwind | Pas besoin d'une SPA pour le CRUD admin |
 | Mobile + Web | Flutter 3.9 + Riverpod + go_router | Single codebase iOS/Android/Web |

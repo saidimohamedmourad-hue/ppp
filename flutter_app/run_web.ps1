@@ -14,6 +14,16 @@ param([switch]$Chrome)
 
 Set-Location -Path $PSScriptRoot
 
+# Libere le port 8090 si un run precedent est reste en zombie (sinon le nouveau
+# run echoue : "port deja utilise"). C'est LA cause classique des erreurs 8090.
+Get-NetTCPConnection -State Listen -LocalPort 8090 -ErrorAction SilentlyContinue |
+  Select-Object -ExpandProperty OwningProcess -Unique |
+  ForEach-Object {
+    Write-Host "Arret du run precedent (PID $_) qui occupait 8090..." -ForegroundColor DarkYellow
+    Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue
+  }
+Start-Sleep -Milliseconds 500
+
 # Detecte chrome.exe (corrige "Failed to launch browser" si install en x86).
 if (-not $env:CHROME_EXECUTABLE -or -not (Test-Path $env:CHROME_EXECUTABLE)) {
   foreach ($c in @(

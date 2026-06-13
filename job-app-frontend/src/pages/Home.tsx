@@ -1,11 +1,32 @@
-﻿import { Link } from 'react-router-dom'
-import { isLoggedIn, getUser } from '@/utils/api'
+﻿import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { apiFetch, isLoggedIn, getUser } from '@/utils/api'
+import type { Job, TrainingSession, PaginatedResponse } from '@/types'
 
 export default function Home() {
   const loggedIn = isLoggedIn()
   const role = getUser()?.role
   const spaceHref = (role === 'company-owner' || role === 'school-owner') ? '/dashboard' : '/dashboard/jobs'
   const spaceLabel = role === 'company-owner' ? 'Mon entreprise →' : role === 'school-owner' ? 'Mon école →' : 'Voir les offres →'
+
+  // Vitrine publique : où mène un clic sur une offre / formation.
+  // Déconnecté → connexion ; candidat connecté → son tableau de bord ;
+  // autre rôle connecté → son espace.
+  const jobsClick = !loggedIn ? '/login' : role === 'job-seeker' ? '/dashboard/jobs' : '/dashboard'
+  const trainingsClick = !loggedIn ? '/login' : role === 'job-seeker' ? '/dashboard/trainings' : '/dashboard'
+
+  const [jobs, setJobs] = useState<Job[]>([])
+  const [trainings, setTrainings] = useState<TrainingSession[]>([])
+
+  // Aperçu réel via les endpoints publics (pas d'auth requise pour lister).
+  useEffect(() => {
+    apiFetch('jobs?page=1')
+      .then((r: PaginatedResponse<Job>) => setJobs((r.data ?? []).slice(0, 6)))
+      .catch(() => {})
+    apiFetch('training-sessions?page=1')
+      .then((r: PaginatedResponse<TrainingSession>) => setTrainings((r.data ?? []).slice(0, 6)))
+      .catch(() => {})
+  }, [])
 
   return (
     <div style={{ background: '#080c14', minHeight: '100vh', color: '#e8ecf2', fontFamily: '"DM Sans", sans-serif' }}>
@@ -168,68 +189,68 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Locked preview ── */}
+      {/* ── Vitrine publique : vraies offres & formations (clic → connexion) ── */}
       <section style={{ padding: '0 60px 90px', maxWidth: 1120, margin: '0 auto' }}>
-        {/* Jobs preview */}
+        {/* Offres */}
         <div style={{ marginBottom: 56 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <h2 style={{ fontFamily: '"Syne", sans-serif', fontWeight: 800, fontSize: 24, color: 'white', letterSpacing: '-0.5px' }}>Offres d'emploi</h2>
-            <Link to="/register" style={{ fontSize: 13, color: '#4fffb0', textDecoration: 'none', fontWeight: 500 }}>S'inscrire pour voir →</Link>
+            <Link to={jobsClick} style={{ fontSize: 13, color: '#4fffb0', textDecoration: 'none', fontWeight: 500 }}>
+              {loggedIn ? 'Voir toutes les offres →' : 'Se connecter pour postuler →'}
+            </Link>
           </div>
-          <div style={{ position: 'relative' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, filter: 'blur(4px)', pointerEvents: 'none', userSelect: 'none' }}>
-              {[
-                { icon: '🏢', title: '████████████', sub: '████████ · Alger', tag: 'Remote' },
-                { icon: '🏢', title: '██████████████', sub: '██████ · Oran', tag: 'Full-time' },
-                { icon: '🏢', title: '█████████████', sub: '█████████ · Constantine', tag: 'Hybrid' },
-              ].map((c, i) => (
-                <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: 22 }}>
-                  <div style={{ fontSize: 26, marginBottom: 12 }}>{c.icon}</div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: 'white', marginBottom: 5, fontFamily: '"Syne", sans-serif', letterSpacing: 2 }}>{c.title}</div>
-                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.38)', letterSpacing: 2 }}>{c.sub}</div>
-                  <span style={{ display: 'inline-block', marginTop: 12, fontSize: 11, color: '#4fffb0', background: 'rgba(79,255,176,0.1)', padding: '3px 10px', borderRadius: 100 }}>{c.tag}</span>
-                </div>
+          {jobs.length === 0 ? (
+            <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 14 }}>Aucune offre publiée pour le moment.</p>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+              {jobs.map(job => (
+                <Link key={job.id} to={jobsClick}
+                  style={{ display: 'block', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: 22, textDecoration: 'none', color: 'inherit', transition: 'border-color .2s, background .2s' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(79,255,176,0.28)'; e.currentTarget.style.background = 'rgba(79,255,176,0.04)' }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)' }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 11, background: 'rgba(79,255,176,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🏢</div>
+                    {job.contract_type && <span style={{ fontSize: 11, color: '#4fffb0', background: 'rgba(79,255,176,0.1)', padding: '3px 10px', borderRadius: 100 }}>{job.contract_type}</span>}
+                  </div>
+                  <div style={{ fontFamily: '"Syne", sans-serif', fontWeight: 700, fontSize: 15, color: 'white', marginBottom: 5 }}>{job.title}</div>
+                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>{job.company?.name}</div>
+                  {job.location && <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 10 }}>📍 {job.location}</div>}
+                </Link>
               ))}
             </div>
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, background: 'rgba(8,12,20,0.55)', backdropFilter: 'blur(2px)', borderRadius: 16 }}>
-              <div style={{ fontSize: 28 }}>🔒</div>
-              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: 500, textAlign: 'center' }}>Créez un compte gratuit pour voir toutes les offres</p>
-              <Link to="/register" style={{ padding: '10px 24px', borderRadius: 100, background: '#4fffb0', color: '#080c14', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
-                Voir les offres →
-              </Link>
-            </div>
-          </div>
+          )}
         </div>
 
-        {/* Trainings preview */}
+        {/* Formations */}
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <h2 style={{ fontFamily: '"Syne", sans-serif', fontWeight: 800, fontSize: 24, color: 'white', letterSpacing: '-0.5px' }}>Formations professionnelles</h2>
-            <Link to="/register" style={{ fontSize: 13, color: '#4fffb0', textDecoration: 'none', fontWeight: 500 }}>S'inscrire pour voir →</Link>
+            <Link to={trainingsClick} style={{ fontSize: 13, color: '#4fffb0', textDecoration: 'none', fontWeight: 500 }}>
+              {loggedIn ? 'Voir toutes les formations →' : "Se connecter pour s'inscrire →"}
+            </Link>
           </div>
-          <div style={{ position: 'relative' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, filter: 'blur(4px)', pointerEvents: 'none', userSelect: 'none' }}>
-              {[
-                { title: '█████████████ IA', school: 'USTHB · 3 mois' },
-                { title: '██████ & Cloud AWS', school: 'ISI Alger · 2 mois' },
-                { title: '████ Science Python', school: 'ESI · 6 semaines' },
-              ].map((c, i) => (
-                <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: 22 }}>
-                  <div style={{ fontSize: 26, marginBottom: 12 }}>🎓</div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: 'white', marginBottom: 5, fontFamily: '"Syne", sans-serif', letterSpacing: 2 }}>{c.title}</div>
-                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.38)' }}>{c.school}</div>
-                  <span style={{ display: 'inline-block', marginTop: 12, fontSize: 11, color: '#4fffb0', background: 'rgba(79,255,176,0.1)', padding: '3px 10px', borderRadius: 100 }}>Disponible</span>
-                </div>
+          {trainings.length === 0 ? (
+            <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 14 }}>Aucune formation publiée pour le moment.</p>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+              {trainings.map(t => (
+                <Link key={t.id} to={trainingsClick}
+                  style={{ display: 'block', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: 22, textDecoration: 'none', color: 'inherit', transition: 'border-color .2s, background .2s' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(167,139,250,0.35)'; e.currentTarget.style.background = 'rgba(167,139,250,0.05)' }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)' }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 11, background: 'rgba(167,139,250,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🎓</div>
+                    {t.price != null && <span style={{ fontSize: 11, color: '#a78bfa', background: 'rgba(167,139,250,0.12)', padding: '3px 10px', borderRadius: 100, fontWeight: 600 }}>{t.price === 0 ? 'Gratuit' : `${t.price.toLocaleString()} DA`}</span>}
+                  </div>
+                  <div style={{ fontFamily: '"Syne", sans-serif', fontWeight: 700, fontSize: 15, color: 'white', marginBottom: 5 }}>{t.title}</div>
+                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>{t.school?.name}</div>
+                  {t.min_education_level && <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 10 }}>🎓 Niveau min : {t.min_education_level}</div>}
+                </Link>
               ))}
             </div>
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, background: 'rgba(8,12,20,0.55)', backdropFilter: 'blur(2px)', borderRadius: 16 }}>
-              <div style={{ fontSize: 28 }}>🔒</div>
-              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: 500, textAlign: 'center' }}>Créez un compte gratuit pour voir toutes les formations</p>
-              <Link to="/register" style={{ padding: '10px 24px', borderRadius: 100, background: '#4fffb0', color: '#080c14', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
-                Voir les formations →
-              </Link>
-            </div>
-          </div>
+          )}
         </div>
       </section>
 

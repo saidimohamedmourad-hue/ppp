@@ -84,6 +84,14 @@ un candidat est verrouillé derrière le rôle candidat, tout ce qui touche une
 entreprise derrière le rôle entreprise, etc. Un utilisateur ne peut pas accéder
 aux données d'un autre profil.
 
+**Accès public vs. authentifié.** Les **listes** d'offres et de formations (et
+les fiches entreprises / écoles) sont exposées en **lecture publique** : elles
+alimentent la **vitrine de la page d'accueil**, consultable sans compte. En
+revanche, **toute action** — voir le détail complet, postuler / s'inscrire, et
+l'accès aux espaces candidat / entreprise / école — **exige l'authentification**
+(un clic sur un élément de la vitrine renvoie vers la connexion). Ainsi,
+**aucune donnée personnelle de candidat n'est exposée publiquement**.
+
 ---
 
 ## 4. Modèle de données (les entités principales)

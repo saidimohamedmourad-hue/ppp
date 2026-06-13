@@ -2,7 +2,7 @@
 
 **Projet IQRA** — Web (React) + Mobile (Flutter) + Backend (Laravel)
 **Date plan initial** : 2026-05-28
-**Dernière màj** : 2026-05-30
+**Dernière màj** : 2026-06-13
 **Status global** : 🟢 5 phases sur 6 livrées (Phase 4 reste en backlog)
 
 ---
@@ -23,6 +23,17 @@
 - 🔐 **Audit forensique** : table `login_audits` qui trace chaque login/échec/reset avec IP + user-agent + raison
 - 🚨 **Rate limiting** : `/login` (5/IP/min + 5/email/min), `/forgot-password` (10/IP/h + 3/email/h)
 - 🤖 **Turnstile** : CAPTCHA Cloudflare invisible sur `/forgot-password`
+
+**Mise à jour 2026-06-13** :
+- 🌐 **Inscription sociale tous profils** : les boutons **Google / Facebook**
+  sont désormais proposés à l'inscription pour **candidat, entreprise ET école**,
+  sur le **web (React)** comme sur **Flutter** — le **rôle choisi** est transmis
+  au backend et appliqué à la création du compte social (whitelist
+  `job-seeker | company-owner | school-owner`).
+- 🖥️ **Connexion Google sur Flutter Web fiabilisée** : lancement stable sur le
+  port fixe **8090** (`run_web.bat` libère le port puis sert l'app en
+  `web-server`) ; reste l'autorisation des origines `localhost:8090` /
+  `127.0.0.1:8090` dans Google Cloud pour le test live.
 
 ---
 

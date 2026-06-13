@@ -29,13 +29,13 @@ class SocialAuthRepository {
   ///
   /// Returns `null` if the user cancelled the dialog (we treat that as a
   /// silent no-op rather than an error).
-  Future<({UserModel user, String token})?> signInWithGoogle() async {
+  Future<({UserModel user, String token})?> signInWithGoogle({String? role}) async {
     final googleSignIn = _buildGoogleSignIn();
     try {
       final account = await googleSignIn.signIn();
       if (account == null) return null; // user cancelled
 
-      return await completeGoogleFromAccount(account);
+      return await completeGoogleFromAccount(account, role: role);
     } on DioException catch (e) {
       // Clean up the Google session so a retry doesn't reuse a stale grant.
       await googleSignIn.signOut().catchError((_) => null);
@@ -51,10 +51,11 @@ class SocialAuthRepository {
   /// token. Used by the web GIS button flow, where the account arrives through
   /// `GoogleSignIn.onCurrentUserChanged` rather than from `signIn()`.
   Future<({UserModel user, String token})> completeGoogleFromAccount(
-    GoogleSignInAccount account,
-  ) async {
+    GoogleSignInAccount account, {
+    String? role,
+  }) async {
     final auth = await account.authentication;
-    return _exchangeGoogle(idToken: auth.idToken, accessToken: auth.accessToken);
+    return _exchangeGoogle(idToken: auth.idToken, accessToken: auth.accessToken, role: role);
   }
 
   /// POSTs the Google token to the backend and persists the returned Sanctum
@@ -63,6 +64,7 @@ class SocialAuthRepository {
   Future<({UserModel user, String token})> _exchangeGoogle({
     String? idToken,
     String? accessToken,
+    String? role,
   }) async {
     final body = <String, dynamic>{};
     if (idToken != null && idToken.isNotEmpty) {
@@ -72,6 +74,8 @@ class SocialAuthRepository {
     } else {
       throw Exception('Google n\'a pas retourné de jeton utilisable.');
     }
+    // Rôle souhaité à l'inscription (appliqué seulement si nouveau compte).
+    if (role != null && role.isNotEmpty) body['role'] = role;
 
     final res = await _client.dio.post('/auth/google', data: body);
     final apiToken = res.data['token'] as String;
@@ -87,7 +91,7 @@ class SocialAuthRepository {
   ///
   /// Instagram users with a linked Facebook account can sign in here too.
   /// Returns `null` if the user cancelled the dialog.
-  Future<({UserModel user, String token})?> signInWithFacebook() async {
+  Future<({UserModel user, String token})?> signInWithFacebook({String? role}) async {
     try {
       final result = await FacebookAuth.instance.login(
         permissions: const ['email', 'public_profile'],
@@ -101,6 +105,7 @@ class SocialAuthRepository {
       final accessToken = result.accessToken!.tokenString;
       final res = await _client.dio.post('/auth/facebook', data: {
         'access_token': accessToken,
+        if (role != null && role.isNotEmpty) 'role': role,
       });
 
       final apiToken = res.data['token'] as String;

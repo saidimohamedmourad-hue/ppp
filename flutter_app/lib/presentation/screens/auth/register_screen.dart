@@ -1,8 +1,14 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../providers/auth_provider.dart';
+import '../../widgets/google_web_button.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../data/repositories/social_auth_repository.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -19,18 +25,88 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _password = TextEditingController();
   String _role = 'job-seeker';
   bool _loading = false;
+  bool _socialBusy = false;
+
+  // Web only: GIS delivers the account through this stream after the user
+  // clicks the rendered button (GoogleSignIn.signIn() throws on web).
+  StreamSubscription<GoogleSignInAccount?>? _googleWebSub;
+  final GoogleSignIn _webGoogle = GoogleSignIn(scopes: const ['email', 'profile', 'openid']);
 
   // Owners must enter a phone number now (it's the public contact on their
   // jobs / training sessions). Candidates can leave it for later.
   bool get _phoneRequired => _role == 'company-owner' || _role == 'school-owner';
 
   @override
+  void initState() {
+    super.initState();
+    if (kIsWeb) {
+      _googleWebSub = _webGoogle.onCurrentUserChanged.listen((account) {
+        if (account != null) _completeWebGoogle(account);
+      });
+    }
+  }
+
+  @override
   void dispose() {
+    _googleWebSub?.cancel();
     _name.dispose();
     _email.dispose();
     _phone.dispose();
     _password.dispose();
     super.dispose();
+  }
+
+  // Après une auth sociale réussie (jeton déjà persisté par le repo), on
+  // rafraîchit l'état pour que le routeur redirige vers le bon espace.
+  Future<void> _afterSocial() async {
+    await ref.read(authProvider.notifier).refreshUser();
+  }
+
+  void _socialError(Object e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString()), backgroundColor: AppColors.error),
+      );
+    }
+  }
+
+  /// Web : échange le compte GIS contre un jeton (avec le rôle choisi).
+  Future<void> _completeWebGoogle(GoogleSignInAccount account) async {
+    setState(() => _socialBusy = true);
+    try {
+      await SocialAuthRepository().completeGoogleFromAccount(account, role: _role);
+      await _afterSocial();
+    } catch (e) {
+      await _webGoogle.signOut().catchError((_) => null);
+      _socialError(e);
+    } finally {
+      if (mounted) setState(() => _socialBusy = false);
+    }
+  }
+
+  /// Mobile : flux Google natif (avec le rôle choisi).
+  Future<void> _googleMobile() async {
+    setState(() => _socialBusy = true);
+    try {
+      final r = await SocialAuthRepository().signInWithGoogle(role: _role);
+      if (r != null) await _afterSocial();
+    } catch (e) {
+      _socialError(e);
+    } finally {
+      if (mounted) setState(() => _socialBusy = false);
+    }
+  }
+
+  Future<void> _facebook() async {
+    setState(() => _socialBusy = true);
+    try {
+      final r = await SocialAuthRepository().signInWithFacebook(role: _role);
+      if (r != null) await _afterSocial();
+    } catch (e) {
+      _socialError(e);
+    } finally {
+      if (mounted) setState(() => _socialBusy = false);
+    }
   }
 
   Future<void> _submit() async {
@@ -171,6 +247,46 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       )
                     : const Text("S'inscrire"),
               ),
+
+              // ── Inscription sociale (tous les profils ; le rôle choisi est
+              //    transmis au backend, appliqué à la création du compte) ──
+              const SizedBox(height: 20),
+              Row(
+                children: const [
+                  Expanded(child: Divider()),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    child: Text('OU', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.muted)),
+                  ),
+                  Expanded(child: Divider()),
+                ],
+              ),
+              const SizedBox(height: 14),
+              if (_socialBusy)
+                const SizedBox(height: 48, child: Center(child: SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2))))
+              else ...[
+                if (kIsWeb)
+                  Align(alignment: Alignment.center, child: googleRenderButton())
+                else
+                  OutlinedButton.icon(
+                    onPressed: _googleMobile,
+                    icon: const Icon(Icons.g_mobiledata, size: 26),
+                    label: const Text('Continuer avec Google'),
+                    style: OutlinedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
+                  ),
+                const SizedBox(height: 10),
+                ElevatedButton.icon(
+                  onPressed: _facebook,
+                  icon: const Icon(Icons.facebook, size: 20),
+                  label: const Text('Continuer avec Facebook'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1877F2),
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(double.infinity, 50),
+                  ),
+                ),
+              ],
+
               const SizedBox(height: 16),
               Center(
                 child: TextButton(

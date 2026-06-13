@@ -1,5 +1,14 @@
 # 📱 Plan Technique - Application Flutter Job & Formation
 
+> **Mise à jour 2026-06-13** — Déjà implémenté depuis ce plan : authentification
+> e-mail + **Google / Facebook (inscription pour tous les profils :
+> candidat / entreprise / école)**, comptes liés, réinitialisation de mot de
+> passe, niveau d'études à la candidature, type de formation **longue durée**,
+> tableaux de bord entreprise / école. **Lancement web fiabilisé** sur le port
+> fixe **8090** via `run_web.bat` (device `web-server`, libération automatique du
+> port ; `stop_web.bat` pour arrêter). État réel complet :
+> [`ETAT_AVANCEMENT.md`](./ETAT_AVANCEMENT.md).
+
 ## Table des Matières
 1. [Vue d'ensemble](#vue-densemble)
 2. [Stack Technologique](#stack-technologique)

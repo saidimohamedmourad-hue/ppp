@@ -73,6 +73,12 @@ cohérence des données et réduit les coûts de maintenance.
   reçoivent ainsi un moyen de contact direct.
 - **Consultation sans quitter la liste** : un clic sur le titre ouvre les
   détails dans une fenêtre (et compte la vue).
+- **Vitrine publique sur l'accueil** : un visiteur **non connecté** voit un
+  **aperçu réel** des offres et formations ; toute consultation détaillée,
+  candidature ou inscription **nécessite la connexion** (le parcours complet est
+  réservé aux comptes ; **les données des candidats ne sont jamais exposées
+  publiquement**). Une fois connecté, le candidat parcourt offres et formations
+  depuis son **tableau de bord**.
 
 ### Intelligence artificielle
 - Chaque candidature reçoit un **score IA (0–100)** et un **retour IA**
@@ -128,7 +134,8 @@ cohérence des données et réduit les coûts de maintenance.
 | Niveau d'études (candidature) + CV conditionnel + niveau min. requis | ✅ Opérationnel |
 | Type formation « Longue durée » | ✅ Opérationnel |
 | Tableaux de bord & statistiques (web + Flutter) | ✅ Opérationnel |
-| Inscription sociale entreprise / école (Google, Facebook) | ✅ Opérationnel |
+| Inscription sociale entreprise / école (Google, Facebook) — **web + Flutter** | ✅ Opérationnel |
+| Vitrine publique (accueil) + accès candidat réservé aux comptes | ✅ Opérationnel |
 | Notifications (web + email) | ✅ Opérationnel |
 | Back-office administrateur complet | ✅ Opérationnel |
 | Coordonnées (téléphone) & contact recruteur | ✅ Opérationnel |
@@ -147,9 +154,9 @@ par l'IA et décide ; un administrateur supervise le tout.
 
 | Sujet | Statut |
 |---|---|
-| Connexion Google sur **Flutter Web** | 🔧 Code corrigé + lancement fiabilisé ; reste l'autorisation des origines dans Google Cloud + test final |
+| Connexion Google sur **Flutter Web** | 🔧 Code prêt + **lancement fiabilisé** (port 8090 stable via `run_web.bat`, libération automatique du port) ; reste l'autorisation des origines dans Google Cloud + test final |
 | Captcha anti-bot dans l'app **Flutter** | ⏳ Présent sur le web React, **à ajouter** côté Flutter |
-| Inscription sociale entreprise/école sur **Flutter** | ⏳ Fait sur le web ; à ajouter sur le register Flutter |
+| Inscription sociale entreprise/école sur **Flutter** | ✅ **Fait** — boutons Google/Facebook sur l'inscription Flutter, rôle transmis au serveur |
 | Chaîne d'intégration continue (CI/CD) | ⏸️ En pause (déblocage administratif d'un compte) |
 | Mise en production / déploiement | ⏳ À planifier |
 | Affinage du moteur de score IA | ⏳ Amélioration continue prévue |

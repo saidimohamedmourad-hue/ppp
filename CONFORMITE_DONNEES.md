@@ -76,6 +76,7 @@ confiance** vis-à-vis des candidats, des entreprises et des écoles.
 | **Journal des connexions** (audit / traçabilité) | ✅ |
 | Vérification serveur des jetons Google / Facebook | ✅ |
 | Secrets conservés côté serveur, hors du code public | ✅ |
+| **Données des candidats non exposées publiquement** — la vitrine publique se limite aux **offres/formations** (données publiées par les entreprises/écoles) ; **toute consultation détaillée, candidature ou inscription exige l'authentification** | ✅ |
 | Chiffrement en transit (HTTPS) en production | 🟧 à confirmer au déploiement |
 | Chiffrement au repos des données sensibles (CV) | ⬜ à évaluer |
 

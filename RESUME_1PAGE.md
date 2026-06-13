@@ -34,6 +34,9 @@ connexions Google/Facebook. *(Détail complet dans `ARCHITECTURE.md`.)*
 - **Tableaux de bord entreprise/école** (web + mobile) : vues, **taux de
   conversion**, candidats actifs, top offres/formations, candidatures récentes.
 - **Notifications** web + email ; **back-office admin** complet avec archivage.
+- **Accueil = vitrine publique** : aperçu **réel** des offres/formations pour les
+  visiteurs ; **consultation détaillée, candidature et inscription réservées aux
+  comptes** (les données des candidats ne sont jamais exposées publiquement).
 
 ## Sécurité & conformité
 - **Sécurité** : mots de passe hachés, anti-force-brute, **anti-robot
@@ -47,8 +50,9 @@ connexions Google/Facebook. *(Détail complet dans `ARCHITECTURE.md`.)*
 ## Stade & prochaines étapes
 - **Stade** : **MVP fonctionnel et démontrable** — parcours complet candidat →
   entreprise/école → admin opérationnel.
-- **En cours** : finalisation Google sur Flutter Web, captcha côté Flutter,
-  chaîne CI/CD, mise en production.
+- **En cours** : finalisation de la connexion Google sur Flutter Web (lancement
+  déjà **fiabilisé** ; reste l'autorisation des origines Google Cloud), captcha
+  côté Flutter, chaîne CI/CD, mise en production.
 
 ## Proposition de valeur (en une phrase)
 > Faire gagner du temps aux recruteurs et aux écoles grâce à une présélection IA,

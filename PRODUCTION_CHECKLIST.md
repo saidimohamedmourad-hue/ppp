@@ -2,7 +2,7 @@
 
 Document de référence pour passer **du dev local à la prod**. À lire en entier au moins une fois avant le premier déploiement, puis utilisé comme checklist pour chaque release.
 
-**Dernière màj** : 2026-05-30
+**Dernière màj** : 2026-06-13
 
 ---
 
