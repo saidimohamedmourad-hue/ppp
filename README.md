@@ -12,7 +12,9 @@ Plateforme algérienne de mise en relation **candidats / entreprises / écoles**
 | [`RESUME_1PAGE.md`](./RESUME_1PAGE.md) | Résumé exécutif (1 page) |
 | [`ETAT_AVANCEMENT.md`](./ETAT_AVANCEMENT.md) | État d'avancement détaillé |
 | [`ARCHITECTURE.md`](./ARCHITECTURE.md) | Architecture (schéma, composants, rôles, flux) |
-| [`CONFORMITE_DONNEES.md`](./CONFORMITE_DONNEES.md) | Conformité loi 18-07 / RGPD-DZ |
+| [`CONFORMITE_DONNEES.md`](./CONFORMITE_DONNEES.md) | Conformité loi 18-07 / RGPD-DZ (analyse d'écart interne) |
+| [`POLITIQUE_CONFIDENTIALITE.md`](./POLITIQUE_CONFIDENTIALITE.md) | Politique de confidentialité (brouillon prêt à publier) |
+| [`CGU.md`](./CGU.md) | Conditions Générales d'Utilisation (brouillon) |
 | [`IQRA_Dossier_BusinessPlan.docx`](./IQRA_Dossier_BusinessPlan.docx) | Dossier Word fusionné |
 | *EN :* [`PROJECT_STATUS.md`](./PROJECT_STATUS.md) · [`DATA_COMPLIANCE.md`](./DATA_COMPLIANCE.md) | Versions anglaises (statut + conformité) |
 
@@ -27,6 +29,7 @@ Plateforme algérienne de mise en relation **candidats / entreprises / écoles**
 | Doc | Contenu |
 |-----|---------|
 | [`PRODUCTION_CHECKLIST.md`](./PRODUCTION_CHECKLIST.md) | Checklist de mise en production |
+| [`GUIDE_DEPLOIEMENT.md`](./GUIDE_DEPLOIEMENT.md) | Guide de déploiement pas-à-pas (serveur, nginx, queue, HTTPS) |
 | [`SETUP_CREDENTIALS.md`](./SETUP_CREDENTIALS.md) | Configurer Gmail / Google / Meta |
 
 > Les fichiers `PLAN_*` sont des **notes de conception** ; l'**état réel à jour**

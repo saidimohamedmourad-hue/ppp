@@ -26,7 +26,7 @@ test('job application index renders when linked vacancy is archived', function (
         'description' => 'Test role',
         'location' => 'Alger',
         'salary' => 50000,
-        'type' => 'CDI',
+        'type' => 'Full-time',
         'jobCategoryId' => $category->id,
         'companyId' => $company->id,
     ]);
