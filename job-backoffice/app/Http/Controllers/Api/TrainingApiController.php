@@ -39,6 +39,11 @@ class TrainingApiController extends Controller
             $query->where('type', $request->input('type'));
         }
 
+        // Filtre par niveau d'études minimum requis (ex. « Licence », « Baccalauréat »…).
+        if ($request->filled('education_level')) {
+            $query->where('min_education_level', $request->input('education_level'));
+        }
+
         $sessions = $query->latest()->paginate(10);
 
         return response()->json($sessions);
@@ -327,5 +332,90 @@ class TrainingApiController extends Controller
             'status'      => $application->status,
             'is_waitlist' => (bool) $application->is_waitlist,
         ]);
+    }
+
+    // ─── Recommandations de formations (selon le CV du candidat) ──────────────
+
+    public function recommended(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $resume = Resume::where('userId', $user->id)
+            ->whereNull('deleted_at')
+            ->latest()
+            ->first();
+
+        $levels = config('education.levels');
+
+        // Profil déduit du CV analysé : niveau d'études + mots-clés (spécialité).
+        $candidateLevel = $resume ? $this->guessEducationLevel((string) $resume->education) : null;
+        $candidateRank  = $candidateLevel ? array_search($candidateLevel, $levels) : false;
+
+        $cvText  = $resume
+            ? mb_strtolower(trim(($resume->skills ?: '') . ' ' . ($resume->summary ?: '') . ' ' . ($resume->education ?: '')))
+            : '';
+        $cvWords = $this->keywords($cvText);
+
+        $sessions = TrainingSession::with(['school', 'trainingCategory'])
+            ->whereNull('deleted_at')
+            ->where('status', 'open')
+            ->latest()
+            ->get();
+
+        $recommended = $sessions->map(function ($s) use ($cvWords, $candidateRank, $levels) {
+            // Éligibilité niveau : ok si la formation n'exige rien, ou si on ne
+            // connaît pas le niveau du candidat, ou si son niveau >= minimum requis.
+            $minRank  = $s->min_education_level ? array_search($s->min_education_level, $levels) : false;
+            $eligible = ($minRank === false) || ($candidateRank === false) || ($candidateRank >= $minRank);
+
+            // Score spécialité/catégorie : chevauchement mots-clés CV ↔ (titre + catégorie).
+            $target = mb_strtolower(($s->title ?: '') . ' ' . optional($s->trainingCategory)->name);
+            $score  = empty($cvWords) ? 0 : count(array_intersect($cvWords, $this->keywords($target)));
+
+            return ['session' => $s, 'eligible' => $eligible, 'score' => $score];
+        })
+        ->filter(fn ($x) => $x['eligible'])
+        ->sortByDesc('score')
+        ->take(8)
+        ->map(fn ($x) => $x['session'])
+        ->values();
+
+        return response()->json([
+            'data'            => $recommended,
+            'education_level' => $candidateLevel,
+            'has_resume'      => (bool) $resume,
+            'analyzed'        => $resume
+                ? (trim((string) $resume->skills) !== '' || trim((string) $resume->education) !== '')
+                : false,
+        ]);
+    }
+
+    /** Déduit un niveau d'études (liste config/education) du texte « formation » du CV. */
+    private function guessEducationLevel(string $education): ?string
+    {
+        $e = mb_strtolower($education);
+
+        return match (true) {
+            str_contains($e, 'doctorat') || str_contains($e, 'phd')                                  => 'Doctorat',
+            str_contains($e, 'ingéni') || str_contains($e, 'ingeni') || str_contains($e, 'engineer') => 'Ingéniorat',
+            str_contains($e, 'master') || str_contains($e, 'mastère') || str_contains($e, 'msc') || str_contains($e, 'm2') => 'Master',
+            str_contains($e, 'licence') || str_contains($e, 'bachelor') || str_contains($e, 'bsc') || str_contains($e, 'l3') => 'Licence',
+            str_contains($e, 'formation professionnelle') || str_contains($e, 'bts') || str_contains($e, 'dts') || str_contains($e, 'technicien') => 'Formation professionnelle',
+            str_contains($e, 'baccalauréat') || str_contains($e, 'baccalaureat') || str_contains($e, 'bac') => 'Baccalauréat',
+            str_contains($e, 'secondaire') || str_contains($e, 'lycée') || str_contains($e, 'lycee')  => 'Secondaire',
+            str_contains($e, 'bem') || str_contains($e, 'moyen')                                       => 'Moyen (BEM)',
+            str_contains($e, 'primaire')                                                              => 'Primaire',
+            default                                                                                   => null,
+        };
+    }
+
+    /** Mots-clés significatifs (>= 4 lettres, hors mots vides) d'un texte. */
+    private function keywords(string $text): array
+    {
+        $stop = ['avec','pour','dans','des','les','une','aux','sur','par','est','son','ses','the','and','for','with','sans','plus','vous','nous','elle'];
+        $words = preg_split('/[^a-z0-9àâçéèêëîïôûùüÿñæœ]+/u', $text) ?: [];
+        $words = array_filter($words, fn ($w) => mb_strlen($w) >= 4 && ! in_array($w, $stop, true));
+
+        return array_values(array_unique($words));
     }
 }

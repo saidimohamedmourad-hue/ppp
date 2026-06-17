@@ -6,8 +6,9 @@ import type { User } from '@/types'
 interface TopSession {
   id: number | string
   title: string
-  totalCount?: number   // inscriptions (alias withCount)
-  viewCount?: number    // vues
+  totalCount?: number     // inscriptions (alias withCount)
+  acceptedCount?: number  // inscriptions acceptées
+  viewCount?: number      // vues
 }
 
 interface Applicant {
@@ -120,24 +121,26 @@ export default function SchoolDashboard() {
       {/* Top formations — analytics (vues + conversion) */}
       <div className="d-card" style={{ marginBottom: 14 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <div className="d-card-title">Top formations — vues & conversion</div>
+          <div className="d-card-title">Analytics par formation — vues, inscriptions, acceptés</div>
           <Link to="/dashboard/school/sessions" style={{ fontSize: 12, color: 'var(--d-gold)', textDecoration: 'none' }}>Toutes →</Link>
         </div>
         {topSessions.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--d-muted)', fontSize: 13 }}>Aucune donnée pour l'instant.</div>
         ) : (
           <div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px 90px 110px', gap: 8, padding: '0 0 8px', fontSize: 11.5, color: 'var(--d-muted2)', textTransform: 'uppercase', letterSpacing: 0.5, borderBottom: '1px solid var(--d-border)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 64px 90px 80px 84px', gap: 8, padding: '0 0 8px', fontSize: 11.5, color: 'var(--d-muted2)', textTransform: 'uppercase', letterSpacing: 0.5, borderBottom: '1px solid var(--d-border)' }}>
               <span>Formation</span>
               <span style={{ textAlign: 'right' }}>Vues</span>
               <span style={{ textAlign: 'right' }}>Inscrits</span>
-              <span style={{ textAlign: 'right' }}>Conversion</span>
+              <span style={{ textAlign: 'right' }}>Acceptés</span>
+              <span style={{ textAlign: 'right' }}>Conv.</span>
             </div>
             {topSessions.map(s => (
-              <div key={s.id} style={{ display: 'grid', gridTemplateColumns: '1fr 90px 90px 110px', gap: 8, padding: '11px 0', borderBottom: '1px solid var(--d-border)', alignItems: 'center', fontSize: 13 }}>
+              <div key={s.id} style={{ display: 'grid', gridTemplateColumns: '1fr 64px 90px 80px 84px', gap: 8, padding: '11px 0', borderBottom: '1px solid var(--d-border)', alignItems: 'center', fontSize: 13 }}>
                 <span style={{ color: 'var(--d-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.title}</span>
                 <span style={{ textAlign: 'right', color: 'var(--d-muted)' }}>{s.viewCount ?? 0}</span>
                 <span style={{ textAlign: 'right', color: 'var(--d-text)', fontWeight: 600 }}>{s.totalCount ?? 0}</span>
+                <span style={{ textAlign: 'right', color: 'var(--d-green)', fontWeight: 600 }}>{s.acceptedCount ?? 0}</span>
                 <span style={{ textAlign: 'right', color: '#4fffb0', fontWeight: 600 }}>{conversion(s.totalCount, s.viewCount)}</span>
               </div>
             ))}

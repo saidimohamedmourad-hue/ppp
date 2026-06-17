@@ -88,7 +88,23 @@ class SchoolController extends Controller
             $school = School::where('ownerId', auth()->user()->id)->firstOrFail();
         }
 
-        return view('school.show', compact('school'));
+        // Analytics par formation : vues, inscriptions et inscriptions acceptées.
+        $sessionAnalytics = $school->trainingSessions()
+            ->whereNull('deleted_at')
+            ->withCount([
+                'trainingApplications as totalCount',
+                'trainingApplications as acceptedCount' => fn ($q) => $q->where('status', 'accepted'),
+            ])
+            ->orderByDesc('totalCount')
+            ->get();
+
+        $analyticsTotals = [
+            'views'    => (int) $sessionAnalytics->sum('viewCount'),
+            'apps'     => (int) $sessionAnalytics->sum('totalCount'),
+            'accepted' => (int) $sessionAnalytics->sum('acceptedCount'),
+        ];
+
+        return view('school.show', compact('school', 'sessionAnalytics', 'analyticsTotals'));
     }
 
     public function edit(?string $id = null)

@@ -6,8 +6,9 @@ import type { User } from '@/types'
 interface TopJob {
   id: number | string
   title: string
-  totalCount?: number   // candidatures (alias withCount)
-  viewCount?: number    // vues
+  totalCount?: number     // candidatures (alias withCount)
+  acceptedCount?: number  // candidatures acceptées
+  viewCount?: number      // vues
 }
 
 interface Applicant {
@@ -120,22 +121,24 @@ export default function CompanyDashboard() {
 
       {/* Top offres — analytics (vues + conversion) */}
       <div className="d-card" style={{ marginBottom: 14 }}>
-        <div className="d-card-title" style={{ marginBottom: 16 }}>Top offres — vues & conversion</div>
+        <div className="d-card-title" style={{ marginBottom: 16 }}>Analytics par offre — vues, candidatures, acceptés</div>
         {topJobs.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--d-muted)', fontSize: 13 }}>Aucune donnée pour l'instant.</div>
         ) : (
           <div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px 90px 110px', gap: 8, padding: '0 0 8px', fontSize: 11.5, color: 'var(--d-muted2)', textTransform: 'uppercase', letterSpacing: 0.5, borderBottom: '1px solid var(--d-border)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 64px 90px 80px 84px', gap: 8, padding: '0 0 8px', fontSize: 11.5, color: 'var(--d-muted2)', textTransform: 'uppercase', letterSpacing: 0.5, borderBottom: '1px solid var(--d-border)' }}>
               <span>Offre</span>
               <span style={{ textAlign: 'right' }}>Vues</span>
               <span style={{ textAlign: 'right' }}>Candidat.</span>
-              <span style={{ textAlign: 'right' }}>Conversion</span>
+              <span style={{ textAlign: 'right' }}>Acceptés</span>
+              <span style={{ textAlign: 'right' }}>Conv.</span>
             </div>
             {topJobs.map(j => (
-              <div key={j.id} style={{ display: 'grid', gridTemplateColumns: '1fr 90px 90px 110px', gap: 8, padding: '11px 0', borderBottom: '1px solid var(--d-border)', alignItems: 'center', fontSize: 13 }}>
+              <div key={j.id} style={{ display: 'grid', gridTemplateColumns: '1fr 64px 90px 80px 84px', gap: 8, padding: '11px 0', borderBottom: '1px solid var(--d-border)', alignItems: 'center', fontSize: 13 }}>
                 <span style={{ color: 'var(--d-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{j.title}</span>
                 <span style={{ textAlign: 'right', color: 'var(--d-muted)' }}>{j.viewCount ?? 0}</span>
                 <span style={{ textAlign: 'right', color: 'var(--d-text)', fontWeight: 600 }}>{j.totalCount ?? 0}</span>
+                <span style={{ textAlign: 'right', color: 'var(--d-green)', fontWeight: 600 }}>{j.acceptedCount ?? 0}</span>
                 <span style={{ textAlign: 'right', color: '#4fffb0', fontWeight: 600 }}>{conversion(j.totalCount, j.viewCount)}</span>
               </div>
             ))}

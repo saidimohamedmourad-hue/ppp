@@ -240,6 +240,7 @@ export default function DashboardTrainings() {
   const [searchInput, setSearchInput] = useState('')
   const [categoryId, setCategoryId] = useState('')
   const [type, setType] = useState<'' | 'en_ligne' | 'accelerer' | 'presentiel' | 'longue_duree'>('')
+  const [educationLevel, setEducationLevel] = useState('')
   const [page, setPage] = useState(1)
   const [enrollTraining, setEnrollTraining] = useState<RawTraining | null>(null)
   const [enrolledIds, setEnrolledIds] = useState<Set<string>>(new Set())
@@ -255,6 +256,7 @@ export default function DashboardTrainings() {
     if (search) p.set('search', search)
     if (categoryId) p.set('category', categoryId)
     if (type) p.set('type', type)
+    if (educationLevel) p.set('education_level', educationLevel)
     p.set('page', String(page))
     apiFetch(`training-sessions?${p}`)
       .then((r: { data: RawTraining[]; current_page: number; last_page: number; total: number }) => {
@@ -263,7 +265,7 @@ export default function DashboardTrainings() {
       })
       .catch(() => setTrainings([]))
       .finally(() => setLoading(false))
-  }, [search, categoryId, type, page])
+  }, [search, categoryId, type, educationLevel, page])
 
   const resetPage = () => setPage(1)
 
@@ -293,8 +295,12 @@ export default function DashboardTrainings() {
           <option value="accelerer">Accéléré</option>
           <option value="longue_duree">Longue durée</option>
         </select>
-        {(search || categoryId || type) && (
-          <button onClick={() => { setSearch(''); setSearchInput(''); setCategoryId(''); setType(''); resetPage() }}
+        <select className="d-input" style={{ flex: '0 0 auto', width: 'auto', cursor: 'pointer' }} value={educationLevel} onChange={e => { setEducationLevel(e.target.value); resetPage() }} title="Niveau d'études minimum requis">
+          <option value="">Tous niveaux</option>
+          {EDUCATION_LEVELS.map(lvl => <option key={lvl} value={lvl}>{lvl}</option>)}
+        </select>
+        {(search || categoryId || type || educationLevel) && (
+          <button onClick={() => { setSearch(''); setSearchInput(''); setCategoryId(''); setType(''); setEducationLevel(''); resetPage() }}
             className="d-btn-ghost" style={{ border: 'none', cursor: 'pointer', fontSize: 12 }}>✕ Effacer</button>
         )}
       </div>

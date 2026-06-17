@@ -10,6 +10,15 @@ interface RawJobApp {
   job_vacancy?: { id: string; title: string; location?: string; company?: { name: string } }
 }
 
+interface RecoTraining {
+  id: string | number
+  title: string
+  school?: { name?: string }
+  trainingCategory?: { name?: string }
+  min_education_level?: string | null
+  type?: string
+}
+
 const STATUS_MAP: Record<string, { label: string; cls: string }> = {
   pending:     { label: 'En attente',       cls: 'd-status-pending'  },
   reviewed:    { label: 'Vue ✓',           cls: 'd-status-pending'  },
@@ -22,6 +31,8 @@ export default function CandidatDashboard() {
   const [user, setUser] = useState<User | null>(getUser())
   const [jobApps, setJobApps] = useState<RawJobApp[]>([])
   const [trainingApps, setTrainingApps] = useState<TrainingApplication[]>([])
+  const [recommended, setRecommended] = useState<RecoTraining[]>([])
+  const [hasResume, setHasResume] = useState(true)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -29,7 +40,8 @@ export default function CandidatDashboard() {
       apiFetch('me').catch(() => null),
       apiFetch('my/job-applications').catch(() => ({ data: [] })),
       apiFetch('my/training-applications').catch(() => ({ data: [] })),
-    ]).then(([me, jobs, trainings]) => {
+      apiFetch('me/recommended-trainings').catch(() => ({ data: [], has_resume: true })),
+    ]).then(([me, jobs, trainings, reco]) => {
       if (me) {
         const u = (me as { data?: User }).data ?? (me as User)
         setUser(u)
@@ -37,6 +49,9 @@ export default function CandidatDashboard() {
       }
       setJobApps((jobs as { data?: RawJobApp[] }).data ?? (jobs as RawJobApp[]))
       setTrainingApps((trainings as { data?: TrainingApplication[] }).data ?? (trainings as TrainingApplication[]))
+      const r = reco as { data?: RecoTraining[]; has_resume?: boolean }
+      setRecommended(r.data ?? [])
+      setHasResume(r.has_resume ?? true)
     }).finally(() => setLoading(false))
   }, [])
 
@@ -153,39 +168,36 @@ export default function CandidatDashboard() {
         </div>
       </div>
 
-      {/* Trainings recommended */}
+      {/* Formations recommandées — selon le CV : spécialité, catégorie, niveau */}
       <div className="d-card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <div className="d-card-title">Formations recommandées</div>
+          <div className="d-card-title">Formations recommandées pour vous</div>
           <Link to="/dashboard/trainings" style={{ fontSize: 12, color: 'var(--d-gold)', textDecoration: 'none' }}>Voir tout →</Link>
         </div>
-        {trainingApps.length > 0 ? (
+        {recommended.length > 0 ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
-            {trainingApps.filter(app => app.training_session).slice(0, 3).map(app => (
-              <div key={app.id} style={{ background: 'var(--d-surface2)', border: '1px solid var(--d-border)', borderRadius: 12, padding: 16 }}>
+            {recommended.slice(0, 6).map(t => (
+              <Link key={t.id} to="/dashboard/trainings" style={{ background: 'var(--d-surface2)', border: '1px solid var(--d-border)', borderRadius: 12, padding: 16, textDecoration: 'none', display: 'block' }}>
                 <div style={{ fontSize: 22, marginBottom: 10 }}>🎓</div>
-                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4, color: 'var(--d-text)' }}>{app.training_session?.title}</div>
-                <div style={{ fontSize: 11, color: 'var(--d-muted)' }}>{app.training_session?.school?.name}</div>
-                <span className={STATUS_MAP[app.status]?.cls ?? 'd-status-pending'} style={{ display: 'inline-block', marginTop: 10 }}>
-                  {STATUS_MAP[app.status]?.label}
-                </span>
-              </div>
+                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4, color: 'var(--d-text)' }}>{t.title}</div>
+                <div style={{ fontSize: 11, color: 'var(--d-muted)', marginBottom: 10 }}>{t.school?.name}</div>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  {t.trainingCategory?.name && <span style={{ fontSize: 10.5, color: 'var(--d-blue)', background: 'rgba(96,165,250,0.12)', padding: '3px 8px', borderRadius: 6 }}>{t.trainingCategory.name}</span>}
+                  {t.min_education_level && <span style={{ fontSize: 10.5, color: 'var(--d-muted2)', background: 'var(--d-surface)', padding: '3px 8px', borderRadius: 6 }}>🎓 {t.min_education_level}</span>}
+                </div>
+              </Link>
             ))}
           </div>
+        ) : !hasResume ? (
+          <div style={{ textAlign: 'center', padding: '28px 0', color: 'var(--d-muted)' }}>
+            <div style={{ fontSize: 30, marginBottom: 10, opacity: 0.5 }}>📄</div>
+            <p style={{ fontSize: 13, marginBottom: 12 }}>Ajoutez votre CV pour recevoir des formations adaptées à votre profil (spécialité, niveau d'études).</p>
+            <Link to="/dashboard/resumes" className="d-btn-gold" style={{ textDecoration: 'none' }}>Ajouter mon CV</Link>
+          </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
-            {[
-              { icon: '🤖', title: 'Bootcamp IA & ML', school: 'USTHB · 3 mois', color: 'var(--d-blue)', label: 'Présentiel' },
-              { icon: '☁️', title: 'DevOps & Cloud AWS', school: 'ISI Alger · 2 mois', color: 'var(--d-green)', label: 'En ligne' },
-              { icon: '📊', title: 'Data Science Python', school: 'ESI · 6 semaines', color: 'var(--d-gold)', label: 'Hybride' },
-            ].map(t => (
-              <div key={t.title} style={{ background: 'var(--d-surface2)', border: '1px solid var(--d-border)', borderRadius: 12, padding: 16 }}>
-                <div style={{ fontSize: 22, marginBottom: 10 }}>{t.icon}</div>
-                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4, color: 'var(--d-text)' }}>{t.title}</div>
-                <div style={{ fontSize: 11, color: 'var(--d-muted)', marginBottom: 10 }}>{t.school}</div>
-                <span style={{ fontSize: 11, color: t.color, background: `${t.color}18`, padding: '3px 8px', borderRadius: 6, display: 'inline-block' }}>{t.label}</span>
-              </div>
-            ))}
+          <div style={{ textAlign: 'center', padding: '28px 0', color: 'var(--d-muted)' }}>
+            <div style={{ fontSize: 30, marginBottom: 10, opacity: 0.5 }}>🎓</div>
+            <p style={{ fontSize: 13 }}>Aucune formation recommandée pour le moment. <Link to="/dashboard/trainings" style={{ color: 'var(--d-gold)' }}>Parcourir les formations →</Link></p>
           </div>
         )}
       </div>

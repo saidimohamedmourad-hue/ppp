@@ -15,6 +15,7 @@ Plateforme algérienne de mise en relation **candidats / entreprises / écoles**
 | [`CONFORMITE_DONNEES.md`](./CONFORMITE_DONNEES.md) | Conformité loi 18-07 / RGPD-DZ (analyse d'écart interne) |
 | [`POLITIQUE_CONFIDENTIALITE.md`](./POLITIQUE_CONFIDENTIALITE.md) | Politique de confidentialité (brouillon prêt à publier) |
 | [`CGU.md`](./CGU.md) | Conditions Générales d'Utilisation (brouillon) |
+| [`REGISTRE_TRAITEMENTS.md`](./REGISTRE_TRAITEMENTS.md) | Registre des traitements (dossier ANPDP) |
 | [`IQRA_Dossier_BusinessPlan.docx`](./IQRA_Dossier_BusinessPlan.docx) | Dossier Word fusionné |
 | *EN :* [`PROJECT_STATUS.md`](./PROJECT_STATUS.md) · [`DATA_COMPLIANCE.md`](./DATA_COMPLIANCE.md) | Versions anglaises (statut + conformité) |
 
@@ -30,6 +31,7 @@ Plateforme algérienne de mise en relation **candidats / entreprises / écoles**
 |-----|---------|
 | [`PRODUCTION_CHECKLIST.md`](./PRODUCTION_CHECKLIST.md) | Checklist de mise en production |
 | [`GUIDE_DEPLOIEMENT.md`](./GUIDE_DEPLOIEMENT.md) | Guide de déploiement pas-à-pas (serveur, nginx, queue, HTTPS) |
+| [`ACTIONS_EXTERNES.md`](./ACTIONS_EXTERNES.md) | Actions hors-code (hébergeur, juridique, ANPDP, CI, services prod) |
 | [`SETUP_CREDENTIALS.md`](./SETUP_CREDENTIALS.md) | Configurer Gmail / Google / Meta |
 
 > Les fichiers `PLAN_*` sont des **notes de conception** ; l'**état réel à jour**

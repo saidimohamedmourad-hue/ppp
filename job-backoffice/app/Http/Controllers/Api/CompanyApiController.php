@@ -57,12 +57,16 @@ class CompanyApiController extends Controller
         // Total des vues cumulées des offres de l'entreprise.
         $totalViews = (int) JobVacancy::whereIn('id', $jobIds)->sum('viewCount');
 
-        // Top 5 offres : chaque modèle expose déjà viewCount (colonne) et
-        // totalCount (alias withCount) -> le front calcule le taux de conversion.
-        $mostApplied = JobVacancy::withCount('jobApplications as totalCount')
+        // Détail par offre : vues (colonne viewCount), candidatures (totalCount)
+        // et acceptées (acceptedCount) -> le front affiche le tableau complet
+        // et calcule le taux de conversion (candidatures / vues).
+        $mostApplied = JobVacancy::withCount([
+                'jobApplications as totalCount',
+                'jobApplications as acceptedCount' => fn ($q) => $q->where('status', 'accepted'),
+            ])
             ->whereIn('id', $jobIds)
             ->orderByDesc('totalCount')
-            ->limit(5)
+            ->limit(50)
             ->get();
 
         // Candidatures récentes (pour le tableau "Candidatures récentes").

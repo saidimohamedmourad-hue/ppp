@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\AnalyzeResumeJob;
 use App\Models\Resume;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -97,6 +98,10 @@ class ProfileApiController extends Controller
 
         // Update user cv_url to latest resume
         $user->update(['cv_url' => $path]);
+
+        // Lance l'analyse IA du CV (résumé, compétences, formation) afin
+        // d'alimenter les recommandations de formations du candidat.
+        AnalyzeResumeJob::dispatch($resume->id);
 
         return response()->json($resume, 201);
     }

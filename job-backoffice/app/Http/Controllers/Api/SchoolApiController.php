@@ -57,10 +57,15 @@ class SchoolApiController extends Controller
 
         $totalViews = (int) TrainingSession::whereIn('id', $sessionIds)->sum('viewCount');
 
-        $mostApplied = TrainingSession::withCount('trainingApplications as totalCount')
+        // Détail par formation : vues (viewCount), inscriptions (totalCount) et
+        // acceptées (acceptedCount) -> tableau complet + taux de conversion.
+        $mostApplied = TrainingSession::withCount([
+                'trainingApplications as totalCount',
+                'trainingApplications as acceptedCount' => fn ($q) => $q->where('status', 'accepted'),
+            ])
             ->whereIn('id', $sessionIds)
             ->orderByDesc('totalCount')
-            ->limit(5)
+            ->limit(50)
             ->get();
 
         $recentApplicants = TrainingApplication::whereIn('trainingSessionId', $sessionIds)

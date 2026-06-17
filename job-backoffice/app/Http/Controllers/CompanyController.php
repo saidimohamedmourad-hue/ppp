@@ -100,9 +100,26 @@ class CompanyController extends Controller
     }else{
         $company = company::where('ownerId',auth()->user()->id)->first();
     }
-        
-       // $applications = JobApplication::with('user')->wherein('jobvacancyId',$company->jobVacancies->pluck('id'))->get();
-        return view('company.show', compact('company', ));
+
+        // Analytics par offre : vues, candidatures et candidatures acceptées.
+        // Permet à l'admin (ou à l'entreprise) de suivre les performances de
+        // chaque offre depuis la fiche entreprise.
+        $jobAnalytics = $company->jobVacancies()
+            ->whereNull('deleted_at')
+            ->withCount([
+                'jobApplications as totalCount',
+                'jobApplications as acceptedCount' => fn ($q) => $q->where('status', 'accepted'),
+            ])
+            ->orderByDesc('totalCount')
+            ->get();
+
+        $analyticsTotals = [
+            'views'    => (int) $jobAnalytics->sum('viewCount'),
+            'apps'     => (int) $jobAnalytics->sum('totalCount'),
+            'accepted' => (int) $jobAnalytics->sum('acceptedCount'),
+        ];
+
+        return view('company.show', compact('company', 'jobAnalytics', 'analyticsTotals'));
     }
 
     /**
