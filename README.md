@@ -16,6 +16,7 @@ Plateforme algérienne de mise en relation **candidats / entreprises / écoles**
 | [`POLITIQUE_CONFIDENTIALITE.md`](./POLITIQUE_CONFIDENTIALITE.md) | Politique de confidentialité (brouillon prêt à publier) |
 | [`CGU.md`](./CGU.md) | Conditions Générales d'Utilisation (brouillon) |
 | [`REGISTRE_TRAITEMENTS.md`](./REGISTRE_TRAITEMENTS.md) | Registre des traitements (dossier ANPDP) |
+| [`BRIEF_AVOCAT.md`](./BRIEF_AVOCAT.md) | Brief pour la validation juridique (avocat / DPO) |
 | [`IQRA_Dossier_BusinessPlan.docx`](./IQRA_Dossier_BusinessPlan.docx) | Dossier Word fusionné |
 | *EN :* [`PROJECT_STATUS.md`](./PROJECT_STATUS.md) · [`DATA_COMPLIANCE.md`](./DATA_COMPLIANCE.md) | Versions anglaises (statut + conformité) |
 
@@ -30,6 +31,8 @@ Plateforme algérienne de mise en relation **candidats / entreprises / écoles**
 | Doc | Contenu |
 |-----|---------|
 | [`V1_RELEASE.md`](./V1_RELEASE.md) | **Préparation v1.0.0** : secrets/`.env`, dépôt propre, checklist commercialisation |
+| [`MIGRATION_NOUVEAU_REPO.md`](./MIGRATION_NOUVEAU_REPO.md) | Migrer vers un nouveau dépôt git propre (historique neuf) |
+| [`GUIDE_HEBERGEUR.md`](./GUIDE_HEBERGEUR.md) | Choisir / configurer l'hébergeur (Hetzner + Laravel Forge) |
 | [`PRODUCTION_CHECKLIST.md`](./PRODUCTION_CHECKLIST.md) | Checklist de mise en production |
 | [`GUIDE_DEPLOIEMENT.md`](./GUIDE_DEPLOIEMENT.md) | Guide de déploiement pas-à-pas (serveur, nginx, queue, HTTPS) |
 | [`ACTIONS_EXTERNES.md`](./ACTIONS_EXTERNES.md) | Actions hors-code (hébergeur, juridique, ANPDP, CI, services prod) |
