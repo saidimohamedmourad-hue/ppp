@@ -43,3 +43,12 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Secrets / env — NE JAMAIS committer
+.env
+.env.*
+!.env.example
+google-services.json
+GoogleService-Info.plist
+**/*.keystore
+key.properties

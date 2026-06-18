@@ -29,6 +29,7 @@ Plateforme algérienne de mise en relation **candidats / entreprises / écoles**
 ### Exploitation
 | Doc | Contenu |
 |-----|---------|
+| [`V1_RELEASE.md`](./V1_RELEASE.md) | **Préparation v1.0.0** : secrets/`.env`, dépôt propre, checklist commercialisation |
 | [`PRODUCTION_CHECKLIST.md`](./PRODUCTION_CHECKLIST.md) | Checklist de mise en production |
 | [`GUIDE_DEPLOIEMENT.md`](./GUIDE_DEPLOIEMENT.md) | Guide de déploiement pas-à-pas (serveur, nginx, queue, HTTPS) |
 | [`ACTIONS_EXTERNES.md`](./ACTIONS_EXTERNES.md) | Actions hors-code (hébergeur, juridique, ANPDP, CI, services prod) |
