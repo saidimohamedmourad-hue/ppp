@@ -77,7 +77,7 @@ jobs:
       # manifest compilé, les tests qui rendent ces pages échouent avec
       # "Vite manifest not found". On compile donc les assets avant les tests.
       - name: Setup Node 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
 
