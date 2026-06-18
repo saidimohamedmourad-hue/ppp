@@ -100,7 +100,10 @@ Procédure d'obtention des clés : [`SETUP_CREDENTIALS.md`](./SETUP_CREDENTIALS.
 ## 4. ✅ Checklist qualité v1.0.0
 
 **Code & tests (doivent être verts) :**
-- [ ] Backend : `cd job-backoffice && php artisan test` → **0 échec**
+- [ ] Backend : `cd job-backoffice && npm install && npm run build && php artisan test` → **0 échec**
+  *(le build Vite est requis : les vues admin Blade utilisent `@vite` ; sans
+  manifest les tests qui rendent ces pages échouent « Vite manifest not found ».
+  La CI `backend.yml` compile désormais les assets avant les tests.)*
 - [ ] Front : `cd job-app-frontend && npx tsc --noEmit` → **0 erreur** + `npm run build`
 - [ ] Flutter : `cd flutter_app && flutter analyze` → **0 issue** + `flutter build web --release`
 - [ ] Lint : Pint (PHP) + ESLint (JS) propres

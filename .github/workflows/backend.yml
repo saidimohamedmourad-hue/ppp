@@ -73,6 +73,17 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --no-progress --prefer-dist
 
+      # Les vues admin Blade (layouts/app.blade.php) utilisent @vite : sans
+      # manifest compilé, les tests qui rendent ces pages échouent avec
+      # "Vite manifest not found". On compile donc les assets avant les tests.
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build Vite assets (back-office)
+        run: npm install --no-audit --no-fund && npm run build
+
       - name: Copy .env for testing
         run: |
           cp .env.example .env
