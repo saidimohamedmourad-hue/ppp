@@ -64,7 +64,7 @@ jobs:
       # Cache Composer's vendor folder. The cache key includes composer.lock
       # so a dep change invalidates it automatically.
       - name: Cache Composer
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: job-backoffice/vendor
           key: composer-${{ runner.os }}-${{ hashFiles('job-backoffice/composer.lock') }}
