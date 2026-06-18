@@ -9,6 +9,8 @@ interface Inscription {
   created_at: string
   user: { id: number; name: string; email: string; phone?: string | null }
   resume?: { url: string; filename: string }
+  aiGeneratedScore?: number | null
+  aiGeneratedFeedback?: string | null
 }
 
 interface SessionInfo {
@@ -22,6 +24,25 @@ const STATUS_MAP = {
   pending:  { label: 'En attente', cls: 'd-status-pending' },
   accepted: { label: 'Confirmé ✓', cls: 'd-status-accepted' },
   rejected: { label: 'Refusé',     cls: 'd-status-rejected' },
+}
+
+// Bloc d'analyse IA (score + retour) affiché à l'école pour chaque inscription.
+function AiAnalysis({ score, feedback }: { score?: number | null; feedback?: string | null }) {
+  if (feedback === '__no_cv__') {
+    return <div style={{ marginTop: 8, fontSize: 12, color: 'var(--d-muted2)', fontStyle: 'italic' }}>🤖 Pas de CV fourni — analyse impossible</div>
+  }
+  if (!feedback) {
+    return <div style={{ marginTop: 8, fontSize: 12, color: 'var(--d-muted2)', fontStyle: 'italic' }}>🤖 Analyse IA en cours…</div>
+  }
+  const s = score ?? 0
+  const t = s >= 70 ? { c: 'var(--d-green)', b: 'rgba(74,222,128,0.12)' } : s >= 40 ? { c: '#f0c45a', b: 'rgba(240,196,90,0.12)' } : { c: 'var(--d-red)', b: 'rgba(248,113,113,0.12)' }
+  return (
+    <div style={{ marginTop: 10, background: 'var(--d-surface2)', border: '1px solid var(--d-border)', borderRadius: 8, padding: '10px 12px' }}>
+      <span style={{ fontSize: 11.5, fontWeight: 700, color: t.c, background: t.b, padding: '2px 10px', borderRadius: 100 }}>🤖 Score IA : {s}/100</span>
+      <div style={{ fontSize: 10.5, color: 'var(--d-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.4, marginTop: 8 }}>Retour IA</div>
+      <div style={{ fontSize: 12.5, color: 'var(--d-muted2)', lineHeight: 1.6, marginTop: 3, whiteSpace: 'pre-wrap' }}>{feedback}</div>
+    </div>
+  )
 }
 
 export default function SessionApplicants() {
@@ -135,6 +156,7 @@ export default function SessionApplicants() {
                     )}
                     <span style={{ opacity: 0.6 }}>· {new Date(ins.created_at).toLocaleDateString('fr-DZ')}</span>
                   </div>
+                  <AiAnalysis score={ins.aiGeneratedScore} feedback={ins.aiGeneratedFeedback} />
                 </div>
                 <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
                   {ins.resume && (

@@ -29,10 +29,14 @@ connexions Google/Facebook. *(Détail complet dans `ARCHITECTURE.md`.)*
 - **Formation** : sessions avec type (dont **longue durée**), lieu, dates, prix,
   **places + liste d'attente**, motif d'annulation, **niveau minimum requis** ;
   inscription avec niveau d'études (**CV optionnel**).
-- **IA** : score + retour sur chaque candidature ; l'humain décide (accepter /
-  en attente / refuser).
-- **Tableaux de bord entreprise/école** (web + mobile) : vues, **taux de
-  conversion**, candidats actifs, top offres/formations, candidatures récentes.
+- **IA** : score + retour sur chaque candidature (**visibles par l'entreprise /
+  l'école**) ; l'humain décide. **Recommandations** : à l'ajout d'un CV, analyse
+  automatique → **offres et formations recommandées** selon spécialité, catégorie
+  et niveau d'études.
+- **Tableaux de bord entreprise/école** (web + mobile) : **détail par offre /
+  formation** (vues · candidatures/inscriptions · acceptées · conversion),
+  candidats actifs, candidatures récentes — **aussi accessibles à l'admin** via la
+  fiche entreprise/école.
 - **Notifications** web + email ; **back-office admin** complet avec archivage.
 - **Accueil = vitrine publique** : aperçu **réel** des offres/formations pour les
   visiteurs ; **consultation détaillée, candidature et inscription réservées aux

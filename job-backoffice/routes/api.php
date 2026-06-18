@@ -101,8 +101,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/my/training-applications', [TrainingApiController::class, 'myApplications']);
         Route::delete('/my/training-applications/{id}', [TrainingApiController::class, 'withdrawApplication']);
 
-        // Formations recommandées selon le CV (spécialité, catégorie, niveau).
+        // Recommandations selon le CV (spécialité, catégorie, niveau).
         Route::get('/me/recommended-trainings', [TrainingApiController::class, 'recommended']);
+        Route::get('/me/recommended-jobs', [JobApiController::class, 'recommended']);
     });
 
     // ─── Company-Owner ────────────────────────────────────────────────────────

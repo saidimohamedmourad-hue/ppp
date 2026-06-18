@@ -287,4 +287,54 @@ class JobApiController extends Controller
             'status' => $application->status,
         ]);
     }
+
+    // ─── Recommandations d'offres (selon le CV du candidat) ───────────────────
+
+    public function recommended(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $resume = Resume::where('userId', $user->id)
+            ->whereNull('deleted_at')
+            ->latest()
+            ->first();
+
+        // Mots-clés du CV analysé (compétences + résumé + formation).
+        $cvText = $resume
+            ? mb_strtolower(trim(($resume->skills ?: '') . ' ' . ($resume->summary ?: '') . ' ' . ($resume->education ?: '')))
+            : '';
+        $cvWords = $this->keywords($cvText);
+
+        $jobs = JobVacancy::with(['company', 'jobCategory'])
+            ->whereNull('deleted_at')
+            ->latest()
+            ->get();
+
+        $recommended = $jobs->map(function ($j) use ($cvWords) {
+            // Score spécialité/catégorie : mots-clés CV ↔ (titre + catégorie + lieu).
+            $target = mb_strtolower(($j->title ?: '') . ' ' . optional($j->jobCategory)->name . ' ' . ($j->location ?: ''));
+            $score  = empty($cvWords) ? 0 : count(array_intersect($cvWords, $this->keywords($target)));
+
+            return ['job' => $j, 'score' => $score];
+        })
+        ->sortByDesc('score')
+        ->take(8)
+        ->map(fn ($x) => $x['job'])
+        ->values();
+
+        return response()->json([
+            'data'       => $recommended,
+            'has_resume' => (bool) $resume,
+        ]);
+    }
+
+    /** Mots-clés significatifs (>= 4 lettres, hors mots vides) d'un texte. */
+    private function keywords(string $text): array
+    {
+        $stop = ['avec','pour','dans','des','les','une','aux','sur','par','est','son','ses','the','and','for','with','sans','plus','vous','nous','elle'];
+        $words = preg_split('/[^a-z0-9àâçéèêëîïôûùüÿñæœ]+/u', $text) ?: [];
+        $words = array_filter($words, fn ($w) => mb_strlen($w) >= 4 && ! in_array($w, $stop, true));
+
+        return array_values(array_unique($words));
+    }
 }

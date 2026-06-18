@@ -162,6 +162,22 @@ Requête → jeton valide ? → rôle autorisé ? → action permise ? → répo
 (sinon : refus)
 ```
 
+**e) Recommandations à partir du CV**
+```
+Candidat ajoute un CV au profil
+→ analyse asynchrone du CV (compétences, formation, niveau)
+→ le candidat reçoit des OFFRES et des FORMATIONS recommandées,
+  selon sa spécialité / catégorie et son niveau d'études
+  (formations filtrées sur le niveau minimum requis)
+```
+
+**f) Analyse par offre / formation (tableaux de bord)**
+```
+Pour chaque offre / formation : vues + candidatures/inscriptions + acceptées
+→ affiché à l'entreprise / l'école dans son tableau de bord
+→ et à l'administrateur depuis la fiche entreprise / école (back-office)
+```
+
 ---
 
 ## 6. Sécurité (résumé technique)

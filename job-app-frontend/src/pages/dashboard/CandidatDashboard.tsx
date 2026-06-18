@@ -19,6 +19,14 @@ interface RecoTraining {
   type?: string
 }
 
+interface RecoJob {
+  id: string | number
+  title: string
+  location?: string
+  company?: { name?: string }
+  jobCategory?: { name?: string }
+}
+
 const STATUS_MAP: Record<string, { label: string; cls: string }> = {
   pending:     { label: 'En attente',       cls: 'd-status-pending'  },
   reviewed:    { label: 'Vue ✓',           cls: 'd-status-pending'  },
@@ -32,6 +40,7 @@ export default function CandidatDashboard() {
   const [jobApps, setJobApps] = useState<RawJobApp[]>([])
   const [trainingApps, setTrainingApps] = useState<TrainingApplication[]>([])
   const [recommended, setRecommended] = useState<RecoTraining[]>([])
+  const [recommendedJobs, setRecommendedJobs] = useState<RecoJob[]>([])
   const [hasResume, setHasResume] = useState(true)
   const [loading, setLoading] = useState(true)
 
@@ -41,7 +50,8 @@ export default function CandidatDashboard() {
       apiFetch('my/job-applications').catch(() => ({ data: [] })),
       apiFetch('my/training-applications').catch(() => ({ data: [] })),
       apiFetch('me/recommended-trainings').catch(() => ({ data: [], has_resume: true })),
-    ]).then(([me, jobs, trainings, reco]) => {
+      apiFetch('me/recommended-jobs').catch(() => ({ data: [] })),
+    ]).then(([me, jobs, trainings, reco, recoJobs]) => {
       if (me) {
         const u = (me as { data?: User }).data ?? (me as User)
         setUser(u)
@@ -52,6 +62,7 @@ export default function CandidatDashboard() {
       const r = reco as { data?: RecoTraining[]; has_resume?: boolean }
       setRecommended(r.data ?? [])
       setHasResume(r.has_resume ?? true)
+      setRecommendedJobs((recoJobs as { data?: RecoJob[] }).data ?? [])
     }).finally(() => setLoading(false))
   }, [])
 
@@ -167,6 +178,26 @@ export default function CandidatDashboard() {
           </Link>
         </div>
       </div>
+
+      {/* Offres recommandées — selon le CV : spécialité / catégorie */}
+      {recommendedJobs.length > 0 && (
+        <div className="d-card" style={{ marginBottom: 14 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <div className="d-card-title">Offres recommandées pour vous</div>
+            <Link to="/dashboard/jobs" style={{ fontSize: 12, color: 'var(--d-gold)', textDecoration: 'none' }}>Voir tout →</Link>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+            {recommendedJobs.slice(0, 6).map(j => (
+              <Link key={j.id} to="/dashboard/jobs" style={{ background: 'var(--d-surface2)', border: '1px solid var(--d-border)', borderRadius: 12, padding: 16, textDecoration: 'none', display: 'block' }}>
+                <div style={{ fontSize: 22, marginBottom: 10 }}>💼</div>
+                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4, color: 'var(--d-text)' }}>{j.title}</div>
+                <div style={{ fontSize: 11, color: 'var(--d-muted)', marginBottom: 10 }}>{j.company?.name}{j.location ? ` · ${j.location}` : ''}</div>
+                {j.jobCategory?.name && <span style={{ fontSize: 10.5, color: 'var(--d-blue)', background: 'rgba(96,165,250,0.12)', padding: '3px 8px', borderRadius: 6 }}>{j.jobCategory.name}</span>}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Formations recommandées — selon le CV : spécialité, catégorie, niveau */}
       <div className="d-card">

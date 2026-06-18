@@ -81,17 +81,28 @@ cohérence des données et réduit les coûts de maintenance.
   depuis son **tableau de bord**.
 
 ### Intelligence artificielle
-- Chaque candidature reçoit un **score IA (0–100)** et un **retour IA**
-  (analyse du CV vs. l'offre).
+- Chaque candidature reçoit un **score IA (0–100)** et un **retour IA** (analyse
+  du CV vs. l'offre), **affichés à l'entreprise / l'école** sur chaque
+  candidature pour les aider à décider.
 - L'entreprise / l'école garde **toujours la décision finale** : elle peut
   accepter, mettre en attente ou refuser, **quel que soit le score**.
+- **Analyse du CV dès l'ajout au profil** : compétences, formation et niveau sont
+  extraits automatiquement.
+- **Recommandations personnalisées** : à partir du CV analysé, le candidat reçoit
+  des **offres d'emploi et des formations recommandées** selon sa **spécialité /
+  catégorie** et son **niveau d'études**.
 
 ### Tableaux de bord & statistiques (entreprise / école)
 - **Statistiques en temps réel** : nombre d'offres/formations, **vues
   cumulées**, candidatures (en attente / acceptées), **candidats actifs (30
   jours)**.
-- **Top offres / formations** avec **taux de conversion** (vues → candidatures).
+- **Détail par offre et par formation** : **vues · candidatures/inscriptions ·
+  acceptées** + **taux de conversion** (vues → candidatures), ligne par ligne.
 - **Candidatures récentes** d'un coup d'œil.
+- **L'administrateur** accède à cette analyse pour **chaque entreprise / école**
+  depuis sa fiche dans le back-office.
+- **Recherche de formations filtrable par niveau d'études** (en plus de la
+  catégorie et du type).
 - Disponible sur le **web (React)** et l'**application Flutter**.
 
 ### Notifications
@@ -134,6 +145,10 @@ cohérence des données et réduit les coûts de maintenance.
 | Niveau d'études (candidature) + CV conditionnel + niveau min. requis | ✅ Opérationnel |
 | Type formation « Longue durée » | ✅ Opérationnel |
 | Tableaux de bord & statistiques (web + Flutter) | ✅ Opérationnel |
+| Analytics détaillés par offre / formation (vues, candidatures, acceptées) — owner + admin | ✅ Opérationnel |
+| Recommandations IA (offres + formations) selon le CV (spécialité, catégorie, niveau) | ✅ Opérationnel |
+| Filtre par niveau d'études dans la recherche de formations | ✅ Opérationnel |
+| Score & retour IA visibles par l'entreprise / l'école | ✅ Opérationnel |
 | Inscription sociale entreprise / école (Google, Facebook) — **web + Flutter** | ✅ Opérationnel |
 | Vitrine publique (accueil) + accès candidat réservé aux comptes | ✅ Opérationnel |
 | Notifications (web + email) | ✅ Opérationnel |

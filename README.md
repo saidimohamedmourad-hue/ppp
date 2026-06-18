@@ -131,6 +131,12 @@ Pour Android : `flutter run -d <device-id>`. Pour iOS : `flutter run -d <ipad/ip
 > (candidat / entreprise / école) sur **web + Flutter** ; **vitrine publique**
 > d'offres/formations sur l'accueil (clic → connexion) ; **run Flutter Web
 > fiabilisé** sur le port 8090 (`run_web.bat`).
+>
+> **Plus récent** : **analytics par offre/formation** (vues · candidatures ·
+> acceptées) côté owner **et** admin ; **recommandations IA** d'offres et de
+> formations selon le CV (spécialité / catégorie / niveau) ; **score & retour
+> IA** visibles par l'entreprise/école ; **filtre niveau d'études** dans la
+> recherche de formations.
 
 ---
 
